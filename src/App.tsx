@@ -34,11 +34,11 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Update Page Title and SEO Meta Description according to route
+  // Update Page Title, Canonical URL, and SEO / OpenGraph metadata according to route
   useEffect(() => {
     let title = 'GlobalEdu - Study Abroad Budget & Scholarship Finder';
     let description =
-      'Estimate international study costs, compare countries and universities, calculate budget shortfalls in PKR, and explore verified scholarships.';
+      'Estimate study abroad costs in PKR and foreign currencies, calculate pre-departure funding gaps, compare destinations, and find verified scholarships.';
 
     switch (currentPath) {
       case '/budget-calculator':
@@ -77,16 +77,41 @@ export default function App() {
           'GlobalEdu executes 100% in-browser calculations with zero tracking and zero server-side storage of family financial records.';
         break;
       default:
-        title = 'GlobalEdu - Study Abroad Budget & Scholarship Finder for International Students';
+        title = 'GlobalEdu - Study Abroad Budget & Scholarship Finder';
+        description =
+          'Estimate study abroad costs in PKR and foreign currencies, calculate pre-departure funding gaps, compare destinations, and find verified scholarships.';
         break;
     }
 
     document.title = title;
 
-    // Update meta tag
+    // Update meta description
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
       metaDesc.setAttribute('content', description);
+    }
+
+    // Update OpenGraph tags
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', title);
+
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', description);
+
+    const twitterTitle = document.querySelector('meta[name="twitter:title"]');
+    if (twitterTitle) twitterTitle.setAttribute('content', title);
+
+    const twitterDesc = document.querySelector('meta[name="twitter:description"]');
+    if (twitterDesc) twitterDesc.setAttribute('content', description);
+
+    // Update canonical and og:url
+    const fullUrl = window.location.origin + currentPath;
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) ogUrl.setAttribute('content', fullUrl);
+
+    let canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) {
+      canonical.setAttribute('href', fullUrl);
     }
   }, [currentPath]);
 

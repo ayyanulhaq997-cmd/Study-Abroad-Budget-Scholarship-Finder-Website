@@ -51,17 +51,17 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
             className="flex items-center space-x-3 cursor-pointer group select-none"
           >
             <div className="w-10 h-10 rounded-xl bg-blue-700 text-white flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:bg-blue-800 transition-colors">
-              <GraduationCap className="w-6 h-6" />
+              <GraduationCap className="w-6 h-6" aria-hidden="true" />
             </div>
             <div>
               <div className="flex items-center space-x-1.5">
                 <span className="font-bold text-lg text-slate-900 tracking-tight">GlobalEdu</span>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-sm bg-blue-100 text-blue-800">
+                <span className="text-xs uppercase font-bold tracking-wider px-1.5 py-0.5 rounded-sm bg-blue-100 text-blue-800">
                   PK
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 font-medium leading-none">
-                Study Abroad Budget & Scholarships
+              <p className="text-xs text-slate-500 font-medium leading-none">
+                Study Abroad Budget &amp; Scholarships
               </p>
             </div>
           </div>
@@ -81,10 +81,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-700' : 'text-slate-400'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-blue-700' : 'text-slate-400'}`} aria-hidden="true" />
                   <span>{item.label}</span>
                   {item.badge && (
-                    <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                    <span className="text-xs font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
                       {item.badge}
                     </span>
                   )}
@@ -96,14 +96,14 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
           {/* Action Button & PKR indicator */}
           <div className="hidden sm:flex items-center space-x-3">
             <div className="hidden xl:flex items-center space-x-1.5 text-xs text-slate-600 bg-slate-100 px-2.5 py-1.5 rounded-md border border-slate-200">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true"></span>
               <span className="font-medium">PKR Optimized</span>
             </div>
             <button
               onClick={() => handleNavClick('/budget-calculator')}
               className="inline-flex items-center space-x-2 bg-blue-700 hover:bg-blue-800 active:bg-blue-900 text-white text-sm font-semibold px-4 py-2 rounded-lg shadow-sm shadow-blue-700/20 transition-all cursor-pointer"
             >
-              <Calculator className="w-4 h-4" />
+              <Calculator className="w-4 h-4" aria-hidden="true" />
               <span>Calculate Budget</span>
             </button>
           </div>
@@ -112,10 +112,12 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
           <div className="flex lg:hidden items-center space-x-2">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-hidden"
+              className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-hidden cursor-pointer"
               aria-label="Toggle navigation menu"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls="mobile-navigation-menu"
             >
-              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isMobileMenuOpen ? <X className="w-6 h-6" aria-hidden="true" /> : <Menu className="w-6 h-6" aria-hidden="true" />}
             </button>
           </div>
         </div>
@@ -123,10 +125,10 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
 
       {/* Mobile Drawer */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden border-b border-slate-200 bg-white px-4 pt-2 pb-5 space-y-1 shadow-lg">
+        <div id="mobile-navigation-menu" className="lg:hidden border-b border-slate-200 bg-white px-4 pt-2 pb-5 space-y-1 shadow-lg">
           <div className="py-2 mb-2 px-3 bg-blue-50 rounded-lg text-xs text-blue-900 flex items-center justify-between">
             <span className="font-medium">Free Study Abroad Financial Planning Tool</span>
-            <span className="text-[10px] bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded font-bold">100% In-Browser</span>
+            <span className="text-xs bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded font-bold">100% In-Browser</span>
           </div>
           {navLinks.map((item) => {
             const isActive = currentPath === item.path;
@@ -142,11 +144,11 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, onNavigate }) => {
                 }`}
               >
                 <div className="flex items-center space-x-3">
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-blue-700' : 'text-slate-400'}`} />
+                  <Icon className={`w-5 h-5 ${isActive ? 'text-blue-700' : 'text-slate-400'}`} aria-hidden="true" />
                   <span>{item.label}</span>
                 </div>
                 {item.badge && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                  <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
                     {item.badge}
                   </span>
                 )}

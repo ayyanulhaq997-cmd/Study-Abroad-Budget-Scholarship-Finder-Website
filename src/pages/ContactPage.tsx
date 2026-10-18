@@ -58,7 +58,7 @@ export const ContactPage: React.FC = () => {
               <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900">Feedback Submitted Successfully</h3>
+              <h2 className="text-xl font-bold text-slate-900">Feedback Submitted Successfully</h2>
               <p className="text-sm text-slate-600 max-w-sm mx-auto">
                 Thank you for contributing to open and honest study abroad information! Our editorial review team inspects submitted primary source URLs regularly.
               </p>
@@ -191,12 +191,12 @@ export const ContactPage: React.FC = () => {
           </div>
 
           <div className="bg-white p-5 rounded-2xl border border-slate-200 text-xs space-y-2">
-            <h4 className="font-bold text-slate-900">Direct Editorial Contact:</h4>
+            <p className="font-bold text-slate-900 text-sm">Direct Editorial Contact:</p>
             <div className="flex items-center space-x-2 text-slate-600">
               <Mail className="w-4 h-4 text-blue-700 shrink-0" />
               <span className="font-mono text-slate-800">editor@globaledu.app</span>
             </div>
-            <p className="text-slate-500 text-[11px] pt-1">
+            <p className="text-slate-500 text-xs pt-1">
               For academic institutional partnerships and verified scholarship commission data additions.
             </p>
           </div>

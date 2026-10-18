@@ -96,54 +96,114 @@ export interface PreDepartureCosts {
 
 export interface BudgetInput {
   homeCountry: string;
-  homeCurrency: string;
+  homeCurrency: string; // e.g. 'PKR'
   destinationCountryId: string;
-  exchangeRateToPKR: number;
+  destinationCurrency?: string;
+  expenseCurrency: string; // The currency in which annual expenses are specified ('PKR' or destination currency)
+  exchangeRateToPKR: number | null; // e.g. 1 Destination Currency = X PKR. null or <= 0 means conversion unavailable
+  isExchangeRateUserProvided?: boolean;
   studyDurationYears: number;
-  annualTuitionForeign: number;
-  annualLivingForeign: number;
-  annualHealthInsuranceForeign: number;
-  annualMiscellaneousForeign: number;
+  annualTuition: number;
+  annualLiving: number;
+  annualInsurance: number;
+  annualSemesterFees: number;
+  oneTimeExpenses: number; // One-time pre-departure expenses
+  oneTimeExpensesCurrency: string; // e.g. 'PKR'
   preDepartureCosts: PreDepartureCosts;
-  availableAnnualBudgetPKR: number;
-  availableOneTimeFundsPKR: number;
+  availableAnnualBudgetPKR: number; // Annual recurring sponsorship
+  availableOneTimeFundsPKR: number; // Available one-time savings/lump sum
+  // Backward compatibility aliases
+  annualTuitionForeign?: number;
+  annualLivingForeign?: number;
+  annualHealthInsuranceForeign?: number;
+  annualMiscellaneousForeign?: number;
   monthlyExpectedPartTimeEarningsForeign?: number;
 }
 
 export interface BreakdownItem {
   id: string;
   label: string;
-  amountForeign: number;
-  amountPKR: number;
+  amountInputCurrency: number;
+  inputCurrency: string;
+  amountForeign: number | null; // null if conversion unavailable
+  foreignCurrency: string;
+  amountPKR: number | null; // null if conversion unavailable
   category: 'one-time' | 'recurring';
   frequency: 'one-time' | 'annual';
   percentageOfTotal: number;
 }
 
 export interface BudgetCalculationResult {
+  // Currencies & exchange rate used
+  inputExpenseCurrency: string;
+  baseCurrency: string;
+  destinationCurrency: string;
+  exchangeRateUsed: number | null;
+  isExchangeRateValid: boolean;
+
+  // Core formulas:
+  // 1. annualRecurringCost = annualTuition + annualLiving + annualInsurance + annualSemesterFees
+  annualRecurringCostInput: number;
+  annualRecurringCostBase: number | null;
+  annualRecurringCostForeign: number | null;
+
+  // 2. firstYearCost = annualRecurringCost + oneTimePreDepartureCosts
+  firstYearCostInput: number;
+  firstYearCostBase: number | null;
+  firstYearCostForeign: number | null;
+
+  // 3. totalDegreeCost = (annualRecurringCost * studyDurationYears) + oneTimePreDepartureCosts
+  totalDegreeCostInput: number;
+  totalDegreeCostBase: number | null;
+  totalDegreeCostForeign: number | null;
+
+  // Pre-departure costs (calculated strictly from itemized inputs, no arbitrary visa proof added)
+  oneTimePreDepartureCostsInput: number;
+  oneTimePreDepartureCostsBase: number;
+  oneTimePreDepartureCostsForeign: number | null;
+
+  // Total available resources = available one-time funds + (annual sponsorship * studyDurationYears)
+  totalAvailableResourcesBase: number;
+  cashAvailableBeforeDepartureBase: number;
+  preDepartureCashGapBase: number;
+
+  // Total degree funding gap = max(0, total degree cost - total available resources)
+  totalDegreeFundingGapBase: number;
+  budgetSurplusBase: number;
+  isShortfall: boolean;
+
+  // Visa financial proof displayed separately as evidence of funds (never double-counted)
+  hasVerifiedVisaProofRequirement: boolean;
+  statutoryAnnualLivingProofForeign: number | null;
+  statutoryAnnualLivingProofBase: number | null;
+  statutoryProofDescription: string | null;
+
+  // Visible calculation assumptions notice
+  calculationAssumptionNotice: string;
+
+  // Itemized breakdown
+  breakdown: BreakdownItem[];
+
+  // Backward compatibility properties
   oneTimePreDeparturePKR: number;
-  oneTimePreDepartureForeign: number;
-  annualRecurringForeign: number;
+  oneTimePreDepartureForeign: number | null;
+  annualRecurringForeign: number | null;
   annualRecurringPKR: number;
-  firstYearTotalForeign: number;
+  firstYearTotalForeign: number | null;
   firstYearTotalPKR: number;
-  totalDegreeCostForeign: number;
   totalDegreeCostPKR: number;
   totalAvailableFundsPKR: number;
   netBalancePKR: number;
-  isShortfall: boolean;
   shortfallPKR: number;
   surplusPKR: number;
   firstYearShortfallPKR: number;
   estimatedBeforeDepartureNeededPKR: number;
-  exchangeRateUsed: number;
   destinationCurrencyCode: string;
-  breakdown: BreakdownItem[];
   annualExpensesBreakdown: {
-    tuitionPKR: number;
-    livingPKR: number;
-    insurancePKR: number;
-    miscPKR: number;
+    tuitionPKR: number | null;
+    livingPKR: number | null;
+    insurancePKR: number | null;
+    miscPKR: number | null;
   };
 }
 

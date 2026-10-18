@@ -44,9 +44,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Core Tools */}
           <div>
-            <h4 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">
+            <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">
               Planning Tools
-            </h4>
+            </h3>
             <ul className="space-y-2.5 text-sm">
               <li>
                 <button
@@ -93,9 +93,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* Official Verification Portals */}
           <div>
-            <h4 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">
+            <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">
               Verified Portals
-            </h4>
+            </h3>
             <ul className="space-y-2.5 text-sm">
               <li>
                 <a
@@ -105,7 +105,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   className="hover:text-blue-400 transition-colors flex items-center space-x-1"
                 >
                   <span>DAAD Germany</span>
-                  <ExternalLink className="w-3 h-3 text-slate-500" />
+                  <ExternalLink className="w-3 h-3 text-slate-500" aria-hidden="true" />
                 </a>
               </li>
               <li>
@@ -116,7 +116,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   className="hover:text-blue-400 transition-colors flex items-center space-x-1"
                 >
                   <span>USEFP Fulbright</span>
-                  <ExternalLink className="w-3 h-3 text-slate-500" />
+                  <ExternalLink className="w-3 h-3 text-slate-500" aria-hidden="true" />
                 </a>
               </li>
               <li>
@@ -127,7 +127,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   className="hover:text-blue-400 transition-colors flex items-center space-x-1"
                 >
                   <span>Chevening UK</span>
-                  <ExternalLink className="w-3 h-3 text-slate-500" />
+                  <ExternalLink className="w-3 h-3 text-slate-500" aria-hidden="true" />
                 </a>
               </li>
               <li>
@@ -138,7 +138,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   className="hover:text-blue-400 transition-colors flex items-center space-x-1"
                 >
                   <span>Study in Korea (NIIED)</span>
-                  <ExternalLink className="w-3 h-3 text-slate-500" />
+                  <ExternalLink className="w-3 h-3 text-slate-500" aria-hidden="true" />
                 </a>
               </li>
               <li>
@@ -149,7 +149,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   className="hover:text-blue-400 transition-colors flex items-center space-x-1"
                 >
                   <span>EduCanada (IRCC)</span>
-                  <ExternalLink className="w-3 h-3 text-slate-500" />
+                  <ExternalLink className="w-3 h-3 text-slate-500" aria-hidden="true" />
                 </a>
               </li>
             </ul>
@@ -157,9 +157,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
 
           {/* About & Trust */}
           <div>
-            <h4 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">
+            <h3 className="text-white font-semibold text-sm uppercase tracking-wider mb-4">
               Transparency
-            </h4>
+            </h3>
             <ul className="space-y-2.5 text-sm">
               <li>
                 <button

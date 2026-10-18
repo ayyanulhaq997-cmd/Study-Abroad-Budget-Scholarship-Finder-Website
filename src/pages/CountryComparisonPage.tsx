@@ -338,9 +338,9 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
 
       {/* Individual Destination Detail Cards */}
       <div className="space-y-4">
-        <h3 className="text-lg font-bold text-slate-900">
+        <h2 className="text-lg font-bold text-slate-900">
           In-Depth Destination Intelligence & Key Advisories
-        </h3>
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {COUNTRIES_DATA.map((c) => (
             <div
@@ -351,7 +351,7 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-2">
                     <span className="text-2xl">{c.flag}</span>
-                    <h4 className="font-bold text-base text-slate-900">{c.name}</h4>
+                    <h3 className="font-bold text-base text-slate-900">{c.name}</h3>
                   </div>
                   <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
                     {c.currencyCode}

@@ -317,8 +317,17 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
             </div>
           </div>
 
-          {/* Scholarship Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Section Heading & Grid */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-slate-900 tracking-tight">
+                Verified Opportunities ({filteredScholarships.length})
+              </h2>
+              <span className="text-xs text-slate-500 font-medium">
+                Official Primary Source Grounding
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredScholarships.map((s) => (
               <div
                 key={s.id}
@@ -472,6 +481,7 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
             )}
           </div>
         </div>
+      </div>
       )}
 
       {/* TAB 2: ELIGIBILITY MATCHER */}
@@ -653,9 +663,9 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
           {/* Results Checklist List */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-900">
+              <h2 className="text-base font-bold text-slate-900">
                 Factual Eligibility Audits ({matchResults.length} Schemes Evaluated)
-              </h3>
+              </h2>
               <span className="text-xs text-slate-500">
                 Sorted by alignment with published criteria
               </span>
@@ -672,7 +682,7 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
                       <div>
                         <div className="flex items-center space-x-2">
-                          <h4 className="font-bold text-base text-slate-900">{s.name}</h4>
+                          <h3 className="font-bold text-base text-slate-900">{s.name}</h3>
                           <span className="text-xs text-slate-500 font-medium">({s.hostCountries.join(', ')})</span>
                         </div>
                         <p className="text-xs text-slate-500">{s.provider}</p>

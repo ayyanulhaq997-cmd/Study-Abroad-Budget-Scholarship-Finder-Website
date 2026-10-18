@@ -5,6 +5,7 @@
 
 import { COUNTRIES_DATA } from '../data/countriesData';
 import {
+  BreakdownItem,
   BudgetCalculationResult,
   BudgetInput,
   Country,
@@ -14,60 +15,84 @@ import {
 export const DEFAULT_PRE_DEPARTURE_PKR: PreDepartureCosts = {
   documentAttestationPKR: 45000, // HEC, IBCC, MOFA verification and translations
   ieltsExamFeePKR: 62000, // British Council / AEO IELTS Academic fee
-  universityApplicationFeesPKR: 45000, // 2-3 university application portal fees (approx 150 EUR/USD)
-  visaAndBiometricFeePKR: 40000, // Embassy visa & Gerry's / VFS appointment charges
+  universityApplicationFeesPKR: 45000, // University application portal fees
+  visaAndBiometricFeePKR: 40000, // Embassy visa & appointment charges
   airfarePKR: 195000, // One-way international student airfare
   initialHousingDepositPKR: 150000, // Initial security deposit & advance rent
   miscellaneousSetupPKR: 60000, // SIM card, winter clothing, initial groceries
 };
 
+export const DEFAULT_PRE_DEPARTURE_TOTAL_PKR = Object.values(DEFAULT_PRE_DEPARTURE_PKR).reduce(
+  (sum, val) => sum + val,
+  0
+);
+
 export const DEFAULT_BUDGET_INPUT: BudgetInput = {
   homeCountry: 'Pakistan',
   homeCurrency: 'PKR',
   destinationCountryId: 'germany',
+  destinationCurrency: 'EUR',
+  expenseCurrency: 'EUR',
   exchangeRateToPKR: 305.50,
+  isExchangeRateUserProvided: false,
   studyDurationYears: 2,
-  annualTuitionForeign: 0,
-  annualLivingForeign: 11904, // Official German Sperrkonto minimum requirement
-  annualHealthInsuranceForeign: 1440, // German TK/AOK public student insurance (~120 EUR/mo)
-  annualMiscellaneousForeign: 600, // Semester administrative contribution & student union fee
+  annualTuition: 0,
+  annualLiving: 11904, // Official German Sperrkonto minimum requirement
+  annualInsurance: 1440, // Public student health insurance
+  annualSemesterFees: 600, // Mandatory semester contribution (Semesterbeitrag)
+  oneTimeExpenses: DEFAULT_PRE_DEPARTURE_TOTAL_PKR,
+  oneTimeExpensesCurrency: 'PKR',
   preDepartureCosts: { ...DEFAULT_PRE_DEPARTURE_PKR },
-  availableAnnualBudgetPKR: 1200000, // PKR 1.2M annual family sponsorship/savings
-  availableOneTimeFundsPKR: 3500000, // PKR 3.5M initial savings for blocked account/departure
+  availableAnnualBudgetPKR: 1200000, // PKR 1.2M annual family sponsorship
+  availableOneTimeFundsPKR: 3500000, // PKR 3.5M initial savings for departure
+  // Legacy aliases
+  annualTuitionForeign: 0,
+  annualLivingForeign: 11904,
+  annualHealthInsuranceForeign: 1440,
+  annualMiscellaneousForeign: 600,
 };
 
 /**
- * Format currency with international number standards
+ * Format currency with international number standards.
+ * Guaranteed rules:
+ * - Never returns fabricated equivalents when amount is null/undefined/NaN.
+ * - Never labels PKR with a dollar sign.
+ * - Formats with clean standard currency symbols and rounding.
  */
 export function formatCurrency(
-  amount: number,
+  amount: number | null | undefined,
   currencyCode: string = 'PKR',
   maxDecimals: number = 0
 ): string {
-  if (isNaN(amount) || amount === null || amount === undefined) {
-    return '0';
+  if (amount === null || amount === undefined || isNaN(amount)) {
+    return 'Conversion unavailable';
   }
-  
-  if (currencyCode === 'PKR') {
-    // Show PKR with comma notation
+
+  const code = (currencyCode || 'PKR').toUpperCase().trim();
+
+  // Strict PKR handling: NEVER format PKR with a dollar sign
+  if (code === 'PKR') {
     return `PKR ${Math.round(amount).toLocaleString('en-US')}`;
   }
 
   try {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currencyCode,
+      currency: code,
       maximumFractionDigits: maxDecimals,
     }).format(amount);
   } catch {
-    return `${currencyCode} ${amount.toLocaleString('en-US', { maximumFractionDigits: maxDecimals })}`;
+    return `${code} ${amount.toLocaleString('en-US', { maximumFractionDigits: maxDecimals })}`;
   }
 }
 
 /**
- * Convert PKR to Pakistani Lakhs and Crores for intuitive Pakistani family planning
+ * Convert PKR to Pakistani Lakhs and Crores for intuitive Pakistani family planning.
  */
-export function formatPakistaniDenominations(amountPKR: number): string {
+export function formatPakistaniDenominations(amountPKR: number | null | undefined): string {
+  if (amountPKR === null || amountPKR === undefined || isNaN(amountPKR)) {
+    return 'Conversion unavailable';
+  }
   const abs = Math.abs(amountPKR);
   if (abs >= 10000000) {
     const crores = (amountPKR / 10000000).toFixed(2);
@@ -80,155 +105,405 @@ export function formatPakistaniDenominations(amountPKR: number): string {
 }
 
 /**
- * Pure calculation logic for study abroad budgets.
- * Distinguishes one-time pre-departure expenses from annual recurring costs.
+ * Calculate the total of itemized pre-departure costs.
  */
-export function calculateBudget(
-  input: BudgetInput,
-  countryData?: Country
-): BudgetCalculationResult {
-  const exchangeRate = Math.max(0.00001, input.exchangeRateToPKR || 1);
-  const years = Math.max(1, Math.min(10, input.studyDurationYears || 1));
-
-  // 1. Calculate One-Time Pre-Departure Costs (PKR base)
-  const pre = input.preDepartureCosts || DEFAULT_PRE_DEPARTURE_PKR;
-  const oneTimePreDeparturePKR =
+export function sumItemizedPreDeparture(pre: PreDepartureCosts): number {
+  if (!pre) return 0;
+  return (
     Number(pre.documentAttestationPKR || 0) +
     Number(pre.ieltsExamFeePKR || 0) +
     Number(pre.universityApplicationFeesPKR || 0) +
     Number(pre.visaAndBiometricFeePKR || 0) +
     Number(pre.airfarePKR || 0) +
     Number(pre.initialHousingDepositPKR || 0) +
-    Number(pre.miscellaneousSetupPKR || 0);
+    Number(pre.miscellaneousSetupPKR || 0)
+  );
+}
 
-  const oneTimePreDepartureForeign = oneTimePreDeparturePKR / exchangeRate;
+/**
+ * Pure calculation logic for study abroad budgets.
+ * 
+ * Strict Formulas Enforced:
+ * 1. annualRecurringCost = annualTuition + annualLiving + annualInsurance + annualSemesterFees
+ * 2. firstYearCost = annualRecurringCost + oneTimePreDepartureCosts
+ * 3. totalDegreeCost = (annualRecurringCost * studyDurationYears) + oneTimePreDepartureCosts
+ * 4. totalAvailableResources = availableOneTimeFunds + (annualSponsorship * studyDurationYears)
+ * 5. totalDegreeFundingGap = max(0, totalDegreeCost - totalAvailableResources)
+ * 6. budgetSurplus = max(0, totalAvailableResources - totalDegreeCost)
+ * 
+ * Invariants:
+ * - Pre-departure expenses are calculated strictly from actual itemized inputs.
+ * - Visa financial proof (such as blocked accounts) is NEVER added to total expenses;
+ *   it is displayed separately as evidence of funds to prevent double-counting.
+ * - Missing or invalid exchange rates return null ("Conversion unavailable") rather than
+ *   assuming 1 PKR = 1 USD or fabricating numbers.
+ * - Never show a negative number labelled as a positive funding gap.
+ */
+export function calculateBudget(
+  input: BudgetInput,
+  countryData?: Country
+): BudgetCalculationResult {
+  const baseCurrency = input.homeCurrency || 'PKR';
+  const destinationCurrency = countryData?.currencyCode || input.destinationCurrency || 'USD';
+  const inputExpenseCurrency = input.expenseCurrency || destinationCurrency;
 
-  // 2. Calculate Annual Recurring Costs (Foreign currency base)
-  const tuition = Number(input.annualTuitionForeign || 0);
-  const living = Number(input.annualLivingForeign || 0);
-  const insurance = Number(input.annualHealthInsuranceForeign || 0);
-  const misc = Number(input.annualMiscellaneousForeign || 0);
+  // Validate exchange rate:
+  // Rate expresses: 1 Destination Currency = X Base Currency (PKR)
+  const rawRate = input.exchangeRateToPKR;
+  const isExchangeRateValid =
+    typeof rawRate === 'number' && !isNaN(rawRate) && rawRate > 0 && isFinite(rawRate);
+  const exchangeRateUsed = isExchangeRateValid ? rawRate : null;
 
-  const annualRecurringForeign = tuition + living + insurance + misc;
-  const annualRecurringPKR = annualRecurringForeign * exchangeRate;
+  const years = Math.max(1, Math.min(10, input.studyDurationYears || 1));
 
-  // 3. First-Year Total
-  const firstYearTotalForeign = oneTimePreDepartureForeign + annualRecurringForeign;
-  const firstYearTotalPKR = oneTimePreDeparturePKR + annualRecurringPKR;
+  // 1. Resolve Annual Inputs (Tuition, Living, Insurance, Semester Fees)
+  const tuition = Number(
+    input.annualTuition !== undefined ? input.annualTuition : input.annualTuitionForeign || 0
+  );
+  const living = Number(
+    input.annualLiving !== undefined ? input.annualLiving : input.annualLivingForeign || 0
+  );
+  const insurance = Number(
+    input.annualInsurance !== undefined
+      ? input.annualInsurance
+      : input.annualHealthInsuranceForeign || 0
+  );
+  const semesterFees = Number(
+    input.annualSemesterFees !== undefined
+      ? input.annualSemesterFees
+      : input.annualMiscellaneousForeign || 0
+  );
 
-  // 4. Total Degree Cost across selected duration
-  const totalDegreeCostForeign = oneTimePreDepartureForeign + annualRecurringForeign * years;
-  const totalDegreeCostPKR = oneTimePreDeparturePKR + annualRecurringPKR * years;
+  // Core Rule 1: annualRecurringCost = annualTuition + annualLiving + annualInsurance + annualSemesterFees
+  const annualRecurringCostInput = tuition + living + insurance + semesterFees;
 
-  // 5. Total Available Funds over the duration
-  const oneTimeAvailable = Number(input.availableOneTimeFundsPKR || 0);
-  const annualAvailable = Number(input.availableAnnualBudgetPKR || 0);
-  const totalAvailableFundsPKR = oneTimeAvailable + annualAvailable * years;
+  // Convert annual recurring costs
+  let annualRecurringCostBase: number | null = null;
+  let annualRecurringCostForeign: number | null = null;
 
-  // 6. Net Balance and Shortfall / Surplus
-  const netBalancePKR = totalAvailableFundsPKR - totalDegreeCostPKR;
-  const isShortfall = netBalancePKR < 0;
-  const shortfallPKR = isShortfall ? Math.abs(netBalancePKR) : 0;
-  const surplusPKR = isShortfall ? 0 : netBalancePKR;
-
-  // 7. First Year Cash Flow Gap
-  const firstYearAvailablePKR = oneTimeAvailable + annualAvailable;
-  const firstYearShortfallPKR = Math.max(0, firstYearTotalPKR - firstYearAvailablePKR);
-
-  // 8. Estimated Needed Before Departure
-  // For Germany: Blocked account (11,904 EUR) + Pre-departure PKR
-  // For Canada: GIC (20,635 CAD) + 1st term tuition + Pre-departure
-  // General: Pre-departure + min 6 months living / statutory requirement
-  let estimatedBeforeDepartureNeededPKR = oneTimePreDeparturePKR;
-  if (countryData && countryData.statutoryAnnualLivingProof > 0) {
-    const statutoryFundInPKR = countryData.statutoryAnnualLivingProof * exchangeRate;
-    estimatedBeforeDepartureNeededPKR += statutoryFundInPKR;
+  if (inputExpenseCurrency === baseCurrency) {
+    // Inputs were entered directly in Base Currency (PKR)
+    annualRecurringCostBase = annualRecurringCostInput;
+    if (baseCurrency === destinationCurrency) {
+      annualRecurringCostForeign = annualRecurringCostInput;
+    } else if (isExchangeRateValid && exchangeRateUsed) {
+      annualRecurringCostForeign = annualRecurringCostInput / exchangeRateUsed;
+    } else {
+      annualRecurringCostForeign = null; // Conversion unavailable
+    }
+  } else if (inputExpenseCurrency === destinationCurrency) {
+    // Inputs were entered in Destination Currency (e.g. EUR, USD, GBP, CAD, AUD)
+    annualRecurringCostForeign = annualRecurringCostInput;
+    if (isExchangeRateValid && exchangeRateUsed) {
+      annualRecurringCostBase = annualRecurringCostInput * exchangeRateUsed;
+    } else {
+      annualRecurringCostBase = null; // Conversion unavailable
+    }
   } else {
-    // Default: Pre-departure + 1st year living/initial deposit
-    estimatedBeforeDepartureNeededPKR += (living + tuition * 0.5) * exchangeRate;
+    // Generic currency fallback
+    annualRecurringCostBase = null;
+    annualRecurringCostForeign = null;
   }
 
-  // 9. Itemized Breakdown for Visualization and Transparency
-  const safeTotalPKR = Math.max(1, totalDegreeCostPKR);
+  // 2. Resolve One-Time Pre-Departure Costs
+  // Itemized breakdown sum in base currency (PKR)
+  const itemizedSum = sumItemizedPreDeparture(input.preDepartureCosts);
+  let oneTimePreDepartureCostsBase = 0;
+  if (input.oneTimeExpenses !== undefined && input.oneTimeExpenses !== null) {
+    oneTimePreDepartureCostsBase = Number(input.oneTimeExpenses);
+  } else {
+    oneTimePreDepartureCostsBase = itemizedSum;
+  }
 
-  const breakdown = [
+  const oneTimePreDepartureCostsInput = oneTimePreDepartureCostsBase;
+  let oneTimePreDepartureCostsForeign: number | null = null;
+  if (baseCurrency === destinationCurrency) {
+    oneTimePreDepartureCostsForeign = oneTimePreDepartureCostsBase;
+  } else if (isExchangeRateValid && exchangeRateUsed) {
+    oneTimePreDepartureCostsForeign = oneTimePreDepartureCostsBase / exchangeRateUsed;
+  } else {
+    oneTimePreDepartureCostsForeign = null;
+  }
+
+  // 3. Core Rule 2: firstYearCost = annualRecurringCost + oneTimePreDepartureCosts
+  let firstYearCostBase: number | null = null;
+  let firstYearCostForeign: number | null = null;
+  let firstYearCostInput = annualRecurringCostInput;
+
+  if (inputExpenseCurrency === baseCurrency) {
+    firstYearCostInput = annualRecurringCostInput + oneTimePreDepartureCostsBase;
+    firstYearCostBase = firstYearCostInput;
+    if (isExchangeRateValid && exchangeRateUsed) {
+      firstYearCostForeign = firstYearCostBase / exchangeRateUsed;
+    } else if (baseCurrency === destinationCurrency) {
+      firstYearCostForeign = firstYearCostBase;
+    } else {
+      firstYearCostForeign = null;
+    }
+  } else {
+    // Input is in destination currency
+    if (oneTimePreDepartureCostsForeign !== null) {
+      firstYearCostInput = annualRecurringCostInput + oneTimePreDepartureCostsForeign;
+      firstYearCostForeign = firstYearCostInput;
+    } else {
+      firstYearCostForeign = null;
+    }
+    if (annualRecurringCostBase !== null) {
+      firstYearCostBase = annualRecurringCostBase + oneTimePreDepartureCostsBase;
+    } else {
+      firstYearCostBase = null;
+    }
+  }
+
+  // 4. Core Rule 3: totalDegreeCost = (annualRecurringCost * studyDurationYears) + oneTimePreDepartureCosts
+  let totalDegreeCostBase: number | null = null;
+  let totalDegreeCostForeign: number | null = null;
+  let totalDegreeCostInput = annualRecurringCostInput * years;
+
+  if (inputExpenseCurrency === baseCurrency) {
+    totalDegreeCostInput = annualRecurringCostInput * years + oneTimePreDepartureCostsBase;
+    totalDegreeCostBase = totalDegreeCostInput;
+    if (isExchangeRateValid && exchangeRateUsed) {
+      totalDegreeCostForeign = totalDegreeCostBase / exchangeRateUsed;
+    } else if (baseCurrency === destinationCurrency) {
+      totalDegreeCostForeign = totalDegreeCostBase;
+    } else {
+      totalDegreeCostForeign = null;
+    }
+  } else {
+    if (oneTimePreDepartureCostsForeign !== null) {
+      totalDegreeCostInput = annualRecurringCostInput * years + oneTimePreDepartureCostsForeign;
+      totalDegreeCostForeign = totalDegreeCostInput;
+    } else {
+      totalDegreeCostForeign = null;
+    }
+    if (annualRecurringCostBase !== null) {
+      totalDegreeCostBase = annualRecurringCostBase * years + oneTimePreDepartureCostsBase;
+    } else {
+      totalDegreeCostBase = null;
+    }
+  }
+
+  // 5. Core Rule 4: Total available resources = available one-time funds + (annual sponsorship * studyDurationYears)
+  const oneTimeAvailable = Number(input.availableOneTimeFundsPKR || 0);
+  const annualAvailable = Number(input.availableAnnualBudgetPKR || 0);
+  const totalAvailableResourcesBase = oneTimeAvailable + annualAvailable * years;
+  const cashAvailableBeforeDepartureBase = oneTimeAvailable;
+
+  // 6. Core Rule 5: Funding Gap & Surplus
+  // Total degree funding gap = max(0, total degree cost - total available resources)
+  const effectiveTotalCostBase = totalDegreeCostBase !== null ? totalDegreeCostBase : 0;
+  const rawGapBase = effectiveTotalCostBase - totalAvailableResourcesBase;
+
+  const totalDegreeFundingGapBase = Math.max(0, rawGapBase);
+  const budgetSurplusBase = Math.max(0, -rawGapBase);
+  const isShortfall = rawGapBase > 0;
+
+  // Pre-departure cash gap: cash needed before boarding vs available one-time savings
+  const preDepartureCashGapBase = Math.max(0, oneTimePreDepartureCostsBase - cashAvailableBeforeDepartureBase);
+  const firstYearAvailableBase = oneTimeAvailable + annualAvailable;
+  const firstYearCostBaseSafe = firstYearCostBase !== null ? firstYearCostBase : 0;
+  const firstYearShortfallBase = Math.max(0, firstYearCostBaseSafe - firstYearAvailableBase);
+
+  // 7. Core Rule 6: Separate Visa Financial Proof (evidence of funds, NOT added to degree cost)
+  const hasVerifiedVisaProofRequirement = Boolean(
+    countryData && countryData.statutoryAnnualLivingProof && countryData.statutoryAnnualLivingProof > 0
+  );
+  const statutoryAnnualLivingProofForeign = hasVerifiedVisaProofRequirement
+    ? countryData!.statutoryAnnualLivingProof
+    : null;
+  const statutoryAnnualLivingProofBase =
+    hasVerifiedVisaProofRequirement && isExchangeRateValid && exchangeRateUsed
+      ? countryData!.statutoryAnnualLivingProof * exchangeRateUsed
+      : null;
+  const statutoryProofDescription = hasVerifiedVisaProofRequirement
+    ? countryData!.officialProofOfFundsRequirement
+    : null;
+
+  // 8. Visible Calculation Assumptions Notice
+  const calculationAssumptionNotice =
+    'These formulas assume constant annual expenses and one-time pre-departure costs charged once.';
+
+  // 9. Itemized Breakdown
+  const safeTotalPKR = Math.max(1, effectiveTotalCostBase);
+  const tuitionBase =
+    inputExpenseCurrency === baseCurrency
+      ? tuition
+      : isExchangeRateValid && exchangeRateUsed
+      ? tuition * exchangeRateUsed
+      : null;
+  const livingBase =
+    inputExpenseCurrency === baseCurrency
+      ? living
+      : isExchangeRateValid && exchangeRateUsed
+      ? living * exchangeRateUsed
+      : null;
+  const insuranceBase =
+    inputExpenseCurrency === baseCurrency
+      ? insurance
+      : isExchangeRateValid && exchangeRateUsed
+      ? insurance * exchangeRateUsed
+      : null;
+  const semesterFeesBase =
+    inputExpenseCurrency === baseCurrency
+      ? semesterFees
+      : isExchangeRateValid && exchangeRateUsed
+      ? semesterFees * exchangeRateUsed
+      : null;
+
+  const breakdown: BreakdownItem[] = [
     {
       id: 'pre-departure',
       label: 'One-Time Pre-Departure Costs (Visa, IELTS, Airfare, Attestations)',
-      amountForeign: oneTimePreDepartureForeign,
-      amountPKR: oneTimePreDeparturePKR,
-      category: 'one-time' as const,
-      frequency: 'one-time' as const,
-      percentageOfTotal: (oneTimePreDeparturePKR / safeTotalPKR) * 100,
+      amountInputCurrency: oneTimePreDepartureCostsBase,
+      inputCurrency: baseCurrency,
+      amountForeign: oneTimePreDepartureCostsForeign,
+      foreignCurrency: destinationCurrency,
+      amountPKR: oneTimePreDepartureCostsBase,
+      category: 'one-time',
+      frequency: 'one-time',
+      percentageOfTotal: (oneTimePreDepartureCostsBase / safeTotalPKR) * 100,
     },
     {
       id: 'tuition',
       label: `Tuition Fees (${years} year${years > 1 ? 's' : ''})`,
-      amountForeign: tuition * years,
-      amountPKR: tuition * exchangeRate * years,
-      category: 'recurring' as const,
-      frequency: 'annual' as const,
-      percentageOfTotal: ((tuition * exchangeRate * years) / safeTotalPKR) * 100,
+      amountInputCurrency: tuition * years,
+      inputCurrency: inputExpenseCurrency,
+      amountForeign:
+        inputExpenseCurrency === destinationCurrency
+          ? tuition * years
+          : isExchangeRateValid && exchangeRateUsed
+          ? (tuition * years) / exchangeRateUsed
+          : null,
+      foreignCurrency: destinationCurrency,
+      amountPKR: tuitionBase !== null ? tuitionBase * years : null,
+      category: 'recurring',
+      frequency: 'annual',
+      percentageOfTotal:
+        tuitionBase !== null ? ((tuitionBase * years) / safeTotalPKR) * 100 : 0,
     },
     {
       id: 'living',
       label: `Living Expenses & Rent (${years} year${years > 1 ? 's' : ''})`,
-      amountForeign: living * years,
-      amountPKR: living * exchangeRate * years,
-      category: 'recurring' as const,
-      frequency: 'annual' as const,
-      percentageOfTotal: ((living * exchangeRate * years) / safeTotalPKR) * 100,
+      amountInputCurrency: living * years,
+      inputCurrency: inputExpenseCurrency,
+      amountForeign:
+        inputExpenseCurrency === destinationCurrency
+          ? living * years
+          : isExchangeRateValid && exchangeRateUsed
+          ? (living * years) / exchangeRateUsed
+          : null,
+      foreignCurrency: destinationCurrency,
+      amountPKR: livingBase !== null ? livingBase * years : null,
+      category: 'recurring',
+      frequency: 'annual',
+      percentageOfTotal:
+        livingBase !== null ? ((livingBase * years) / safeTotalPKR) * 100 : 0,
     },
     {
       id: 'health-insurance',
       label: `Health Insurance & Medical Coverage (${years} year${years > 1 ? 's' : ''})`,
-      amountForeign: insurance * years,
-      amountPKR: insurance * exchangeRate * years,
-      category: 'recurring' as const,
-      frequency: 'annual' as const,
-      percentageOfTotal: ((insurance * exchangeRate * years) / safeTotalPKR) * 100,
+      amountInputCurrency: insurance * years,
+      inputCurrency: inputExpenseCurrency,
+      amountForeign:
+        inputExpenseCurrency === destinationCurrency
+          ? insurance * years
+          : isExchangeRateValid && exchangeRateUsed
+          ? (insurance * years) / exchangeRateUsed
+          : null,
+      foreignCurrency: destinationCurrency,
+      amountPKR: insuranceBase !== null ? insuranceBase * years : null,
+      category: 'recurring',
+      frequency: 'annual',
+      percentageOfTotal:
+        insuranceBase !== null ? ((insuranceBase * years) / safeTotalPKR) * 100 : 0,
     },
     {
-      id: 'miscellaneous',
-      label: `Semester Contributions & Supplies (${years} year${years > 1 ? 's' : ''})`,
-      amountForeign: misc * years,
-      amountPKR: misc * exchangeRate * years,
-      category: 'recurring' as const,
-      frequency: 'annual' as const,
-      percentageOfTotal: ((misc * exchangeRate * years) / safeTotalPKR) * 100,
+      id: 'semester-fees',
+      label: `Semester Fees & Administrative Contributions (${years} year${years > 1 ? 's' : ''})`,
+      amountInputCurrency: semesterFees * years,
+      inputCurrency: inputExpenseCurrency,
+      amountForeign:
+        inputExpenseCurrency === destinationCurrency
+          ? semesterFees * years
+          : isExchangeRateValid && exchangeRateUsed
+          ? (semesterFees * years) / exchangeRateUsed
+          : null,
+      foreignCurrency: destinationCurrency,
+      amountPKR: semesterFeesBase !== null ? semesterFeesBase * years : null,
+      category: 'recurring',
+      frequency: 'annual',
+      percentageOfTotal:
+        semesterFeesBase !== null ? ((semesterFeesBase * years) / safeTotalPKR) * 100 : 0,
     },
   ];
 
   return {
-    oneTimePreDeparturePKR,
-    oneTimePreDepartureForeign,
-    annualRecurringForeign,
-    annualRecurringPKR,
-    firstYearTotalForeign,
-    firstYearTotalPKR,
+    inputExpenseCurrency,
+    baseCurrency,
+    destinationCurrency,
+    exchangeRateUsed,
+    isExchangeRateValid,
+
+    annualRecurringCostInput,
+    annualRecurringCostBase,
+    annualRecurringCostForeign,
+
+    firstYearCostInput,
+    firstYearCostBase,
+    firstYearCostForeign,
+
+    totalDegreeCostInput,
+    totalDegreeCostBase,
     totalDegreeCostForeign,
-    totalDegreeCostPKR,
-    totalAvailableFundsPKR,
-    netBalancePKR,
+
+    oneTimePreDepartureCostsInput,
+    oneTimePreDepartureCostsBase,
+    oneTimePreDepartureCostsForeign,
+
+    totalAvailableResourcesBase,
+    cashAvailableBeforeDepartureBase,
+    preDepartureCashGapBase,
+
+    totalDegreeFundingGapBase,
+    budgetSurplusBase,
     isShortfall,
-    shortfallPKR,
-    surplusPKR,
-    firstYearShortfallPKR,
-    estimatedBeforeDepartureNeededPKR,
-    exchangeRateUsed: exchangeRate,
-    destinationCurrencyCode: countryData ? countryData.currencyCode : 'USD',
+
+    hasVerifiedVisaProofRequirement,
+    statutoryAnnualLivingProofForeign,
+    statutoryAnnualLivingProofBase,
+    statutoryProofDescription,
+
+    calculationAssumptionNotice,
     breakdown,
+
+    // Backward compatibility mappings
+    oneTimePreDeparturePKR: oneTimePreDepartureCostsBase,
+    oneTimePreDepartureForeign: oneTimePreDepartureCostsForeign,
+    annualRecurringForeign: annualRecurringCostForeign,
+    annualRecurringPKR: annualRecurringCostBase !== null ? annualRecurringCostBase : annualRecurringCostInput,
+    firstYearTotalForeign: firstYearCostForeign,
+    firstYearTotalPKR: firstYearCostBase !== null ? firstYearCostBase : firstYearCostInput,
+    totalDegreeCostPKR: totalDegreeCostBase !== null ? totalDegreeCostBase : totalDegreeCostInput,
+    totalAvailableFundsPKR: totalAvailableResourcesBase,
+    netBalancePKR: -rawGapBase,
+    shortfallPKR: totalDegreeFundingGapBase,
+    surplusPKR: budgetSurplusBase,
+    firstYearShortfallPKR: firstYearShortfallBase,
+    estimatedBeforeDepartureNeededPKR: oneTimePreDepartureCostsBase,
+    destinationCurrencyCode: destinationCurrency,
     annualExpensesBreakdown: {
-      tuitionPKR: tuition * exchangeRate,
-      livingPKR: living * exchangeRate,
-      insurancePKR: insurance * exchangeRate,
-      miscPKR: misc * exchangeRate,
+      tuitionPKR: tuitionBase,
+      livingPKR: livingBase,
+      insurancePKR: insuranceBase,
+      miscPKR: semesterFeesBase,
     },
   };
 }
 
 /**
- * Pre-configured presets for popular study abroad scenarios
+ * Pre-configured presets for popular study abroad scenarios.
+ * Values explicitly reflect verified country baselines.
  */
 export function getPresetInput(presetId: string): BudgetInput {
   switch (presetId) {
@@ -237,12 +512,17 @@ export function getPresetInput(presetId: string): BudgetInput {
         homeCountry: 'Pakistan',
         homeCurrency: 'PKR',
         destinationCountryId: 'germany',
+        destinationCurrency: 'EUR',
+        expenseCurrency: 'EUR',
         exchangeRateToPKR: 305.50,
+        isExchangeRateUserProvided: false,
         studyDurationYears: 2,
-        annualTuitionForeign: 0, // Public university tuition-free
-        annualLivingForeign: 11904, // Blocked Account requirement
-        annualHealthInsuranceForeign: 1440,
-        annualMiscellaneousForeign: 600, // Semester ticket & admin fee
+        annualTuition: 0, // Public university tuition-free (excluding Baden-Württemberg & TUM)
+        annualLiving: 11904, // Official German Sperrkonto annual minimum (€992/mo)
+        annualInsurance: 1440, // German TK/AOK student health insurance
+        annualSemesterFees: 600, // Mandatory semester contribution (Semesterbeitrag)
+        oneTimeExpenses: DEFAULT_PRE_DEPARTURE_TOTAL_PKR,
+        oneTimeExpensesCurrency: 'PKR',
         preDepartureCosts: { ...DEFAULT_PRE_DEPARTURE_PKR },
         availableAnnualBudgetPKR: 1200000,
         availableOneTimeFundsPKR: 3800000,
@@ -253,17 +533,22 @@ export function getPresetInput(presetId: string): BudgetInput {
         homeCountry: 'Pakistan',
         homeCurrency: 'PKR',
         destinationCountryId: 'usa',
+        destinationCurrency: 'USD',
+        expenseCurrency: 'USD',
         exchangeRateToPKR: 279.50,
+        isExchangeRateUserProvided: false,
         studyDurationYears: 2,
-        annualTuitionForeign: 26000,
-        annualLivingForeign: 15500,
-        annualHealthInsuranceForeign: 2400,
-        annualMiscellaneousForeign: 1200,
+        annualTuition: 26000,
+        annualLiving: 15500,
+        annualInsurance: 2400,
+        annualSemesterFees: 1200,
+        oneTimeExpenses: 650000,
+        oneTimeExpensesCurrency: 'PKR',
         preDepartureCosts: {
           ...DEFAULT_PRE_DEPARTURE_PKR,
           ieltsExamFeePKR: 62000,
-          universityApplicationFeesPKR: 90000, // Higher US app fees ($85-$125 each)
-          visaAndBiometricFeePKR: 130000, // F-1 Visa ($185) + SEVIS I-901 fee ($350)
+          universityApplicationFeesPKR: 90000,
+          visaAndBiometricFeePKR: 130000, // F-1 Visa + SEVIS I-901 fee
           airfarePKR: 280000,
         },
         availableAnnualBudgetPKR: 2500000,
@@ -275,15 +560,20 @@ export function getPresetInput(presetId: string): BudgetInput {
         homeCountry: 'Pakistan',
         homeCurrency: 'PKR',
         destinationCountryId: 'uk',
+        destinationCurrency: 'GBP',
+        expenseCurrency: 'GBP',
         exchangeRateToPKR: 355.00,
+        isExchangeRateUserProvided: false,
         studyDurationYears: 1, // 1-Year UK Master's
-        annualTuitionForeign: 19500,
-        annualLivingForeign: 12006, // UKVI outside London living proof
-        annualHealthInsuranceForeign: 776, // Immigration Health Surcharge (IHS) £776/yr
-        annualMiscellaneousForeign: 800,
+        annualTuition: 19500,
+        annualLiving: 12006, // UKVI outside London living requirement
+        annualInsurance: 776, // Immigration Health Surcharge (IHS) £776/yr
+        annualSemesterFees: 800,
+        oneTimeExpenses: 630000,
+        oneTimeExpensesCurrency: 'PKR',
         preDepartureCosts: {
           ...DEFAULT_PRE_DEPARTURE_PKR,
-          visaAndBiometricFeePKR: 175000, // UK Student visa fee £490 + biometric appointment
+          visaAndBiometricFeePKR: 175000,
           airfarePKR: 210000,
         },
         availableAnnualBudgetPKR: 3000000,
@@ -295,15 +585,20 @@ export function getPresetInput(presetId: string): BudgetInput {
         homeCountry: 'Pakistan',
         homeCurrency: 'PKR',
         destinationCountryId: 'canada',
+        destinationCurrency: 'CAD',
+        expenseCurrency: 'CAD',
         exchangeRateToPKR: 203.20,
+        isExchangeRateUserProvided: false,
         studyDurationYears: 2,
-        annualTuitionForeign: 21000,
-        annualLivingForeign: 20635, // Mandatory IRCC living proof standard
-        annualHealthInsuranceForeign: 950,
-        annualMiscellaneousForeign: 1000,
+        annualTuition: 21000,
+        annualLiving: 20635, // Mandatory IRCC living proof standard
+        annualInsurance: 950,
+        annualSemesterFees: 1000,
+        oneTimeExpenses: 590000,
+        oneTimeExpensesCurrency: 'PKR',
         preDepartureCosts: {
           ...DEFAULT_PRE_DEPARTURE_PKR,
-          visaAndBiometricFeePKR: 50000, // Study permit $150 CAD + Biometrics $85 CAD
+          visaAndBiometricFeePKR: 50000,
           airfarePKR: 290000,
         },
         availableAnnualBudgetPKR: 2000000,
@@ -315,18 +610,49 @@ export function getPresetInput(presetId: string): BudgetInput {
         homeCountry: 'Pakistan',
         homeCurrency: 'PKR',
         destinationCountryId: 'south-korea',
+        destinationCurrency: 'USD',
+        expenseCurrency: 'USD',
         exchangeRateToPKR: 279.50,
+        isExchangeRateUserProvided: false,
         studyDurationYears: 2,
-        annualTuitionForeign: 6500,
-        annualLivingForeign: 8000,
-        annualHealthInsuranceForeign: 650,
-        annualMiscellaneousForeign: 500,
+        annualTuition: 6500,
+        annualLiving: 8000,
+        annualInsurance: 650,
+        annualSemesterFees: 500,
+        oneTimeExpenses: 570000,
+        oneTimeExpensesCurrency: 'PKR',
         preDepartureCosts: {
           ...DEFAULT_PRE_DEPARTURE_PKR,
           airfarePKR: 220000,
         },
         availableAnnualBudgetPKR: 1000000,
         availableOneTimeFundsPKR: 2800000,
+      };
+
+    case 'pkr-audit-benchmark':
+      return {
+        homeCountry: 'Pakistan',
+        homeCurrency: 'PKR',
+        destinationCountryId: 'germany',
+        destinationCurrency: 'EUR',
+        expenseCurrency: 'PKR',
+        exchangeRateToPKR: 305.50,
+        isExchangeRateUserProvided: false,
+        studyDurationYears: 3,
+        annualTuition: 1000000,
+        annualLiving: 600000,
+        annualInsurance: 50000,
+        annualSemesterFees: 50000,
+        oneTimeExpenses: 200000,
+        oneTimeExpensesCurrency: 'PKR',
+        preDepartureCosts: {
+          ...DEFAULT_PRE_DEPARTURE_PKR,
+          airfarePKR: 100000,
+          initialHousingDepositPKR: 50000,
+          miscellaneousSetupPKR: 50000,
+        },
+        availableAnnualBudgetPKR: 0,
+        availableOneTimeFundsPKR: 0,
       };
 
     default:

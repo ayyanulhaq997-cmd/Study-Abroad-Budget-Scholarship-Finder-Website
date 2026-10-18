@@ -14,20 +14,18 @@ import {
   CheckCircle2,
   HelpCircle,
   ArrowRight,
-  TrendingUp,
-  TrendingDown,
   Info,
-  DollarSign,
   ChevronDown,
   ChevronUp,
   Check,
   Building,
   Plane,
   Briefcase,
-  Layers,
   Sparkles,
+  ShieldCheck,
 } from 'lucide-react';
 import { COUNTRIES_DATA } from '../data/countriesData';
+import { SCHOLARSHIPS_DATA } from '../data/scholarshipsData';
 import {
   BudgetCalculationResult,
   BudgetInput,
@@ -38,14 +36,16 @@ import {
   calculateBudget,
   DEFAULT_BUDGET_INPUT,
   DEFAULT_PRE_DEPARTURE_PKR,
+  DEFAULT_PRE_DEPARTURE_TOTAL_PKR,
   formatCurrency,
   formatPakistaniDenominations,
   getPresetInput,
+  sumItemizedPreDeparture,
 } from '../services/budgetCalculator';
 import { PrintableReportModal } from '../components/PrintableReportModal';
 
-const LOCAL_STORAGE_KEY = 'globaledu_study_budget_v1';
-const SAVED_PROFILES_KEY = 'globaledu_saved_profiles_v1';
+const LOCAL_STORAGE_KEY = 'globaledu_study_budget_v2';
+const SAVED_PROFILES_KEY = 'globaledu_saved_profiles_v2';
 
 export const BudgetCalculatorPage: React.FC = () => {
   // Input State initialized from localStorage or defaults
@@ -53,7 +53,18 @@ export const BudgetCalculatorPage: React.FC = () => {
     try {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // Ensure new fields exist
+        return {
+          ...DEFAULT_BUDGET_INPUT,
+          ...parsed,
+          expenseCurrency: parsed.expenseCurrency || parsed.destinationCurrency || 'EUR',
+          annualTuition: parsed.annualTuition !== undefined ? parsed.annualTuition : (parsed.annualTuitionForeign || 0),
+          annualLiving: parsed.annualLiving !== undefined ? parsed.annualLiving : (parsed.annualLivingForeign || 11904),
+          annualInsurance: parsed.annualInsurance !== undefined ? parsed.annualInsurance : (parsed.annualHealthInsuranceForeign || 1440),
+          annualSemesterFees: parsed.annualSemesterFees !== undefined ? parsed.annualSemesterFees : (parsed.annualMiscellaneousForeign || 600),
+          oneTimeExpenses: parsed.oneTimeExpenses !== undefined ? parsed.oneTimeExpenses : DEFAULT_PRE_DEPARTURE_TOTAL_PKR,
+        };
       }
     } catch (e) {
       console.error('Failed to parse saved budget', e);
@@ -89,29 +100,35 @@ export const BudgetCalculatorPage: React.FC = () => {
     );
   }, [input.destinationCountryId]);
 
-  // Save current inputs to localStorage on change
+  // Save current inputs to localStorage on change (debounced for optimal INP interaction responsiveness)
   useEffect(() => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(input));
-    } catch (e) {
-      console.error('LocalStorage write failed', e);
-    }
+    const timer = setTimeout(() => {
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(input));
+      } catch (e) {
+        console.error('LocalStorage write failed', e);
+      }
+    }, 250);
+    return () => clearTimeout(timer);
   }, [input]);
 
   // Validation
   const validateInputs = () => {
     const errors: Record<string, string> = {};
-    if (input.exchangeRateToPKR <= 0) {
-      errors.exchangeRate = 'Exchange rate must be greater than zero.';
+    if (input.exchangeRateToPKR !== null && input.exchangeRateToPKR <= 0) {
+      errors.exchangeRate = 'Exchange rate must be greater than zero or left blank.';
     }
     if (input.studyDurationYears < 1 || input.studyDurationYears > 8) {
       errors.duration = 'Study duration must be between 1 and 8 years.';
     }
-    if (input.annualTuitionForeign < 0) {
+    if (input.annualTuition < 0) {
       errors.tuition = 'Tuition cannot be negative.';
     }
-    if (input.annualLivingForeign < 0) {
+    if (input.annualLiving < 0) {
       errors.living = 'Living expenses cannot be negative.';
+    }
+    if (input.oneTimeExpenses < 0) {
+      errors.oneTimeExpenses = 'One-time expenses cannot be negative.';
     }
     setInputErrors(errors);
     return Object.keys(errors).length === 0;
@@ -139,9 +156,14 @@ export const BudgetCalculatorPage: React.FC = () => {
     setInput((prev) => ({
       ...prev,
       destinationCountryId: countryId,
+      destinationCurrency: country.currencyCode,
+      expenseCurrency: country.currencyCode,
       exchangeRateToPKR: country.defaultExchangeRateToPKR,
-      annualTuitionForeign: country.typicalTuitionMin,
-      annualLivingForeign: country.statutoryAnnualLivingProof,
+      isExchangeRateUserProvided: false,
+      annualTuition: country.typicalTuitionMin,
+      annualLiving: country.statutoryAnnualLivingProof || country.typicalLivingMin,
+      annualInsurance: country.currencyCode === 'EUR' ? 1440 : country.currencyCode === 'GBP' ? 776 : 1500,
+      annualSemesterFees: country.currencyCode === 'EUR' ? 600 : 500,
     }));
   };
 
@@ -191,7 +213,10 @@ export const BudgetCalculatorPage: React.FC = () => {
   };
 
   const handleCopyShareSummary = () => {
-    const summary = `Study Abroad Budget Plan for ${activeCountry.name} (${input.studyDurationYears} yr): Total Cost: ${formatCurrency(result.totalDegreeCostPKR, 'PKR')} (~${formatCurrency(result.totalDegreeCostForeign, result.destinationCurrencyCode)}). Pre-departure funds needed: ${formatCurrency(result.estimatedBeforeDepartureNeededPKR, 'PKR')}. Calculated on GlobalEdu.`;
+    const foreignSummary = result.totalDegreeCostForeign !== null
+      ? ` (~${formatCurrency(result.totalDegreeCostForeign, result.destinationCurrencyCode)})`
+      : '';
+    const summary = `Study Abroad Budget Plan for ${activeCountry.name} (${input.studyDurationYears} yr): Total Cost: ${formatCurrency(result.totalDegreeCostPKR, 'PKR')}${foreignSummary}. Pre-departure expenses: ${formatCurrency(result.oneTimePreDeparturePKR, 'PKR')}. Calculated on GlobalEdu.`;
     navigator.clipboard.writeText(summary);
     setCopiedLinkNotice(true);
     setTimeout(() => setCopiedLinkNotice(false), 2500);
@@ -200,7 +225,34 @@ export const BudgetCalculatorPage: React.FC = () => {
   // Statutory comparison warning
   const isBelowStatutoryLivingProof =
     activeCountry.statutoryAnnualLivingProof > 0 &&
-    input.annualLivingForeign < activeCountry.statutoryAnnualLivingProof;
+    input.expenseCurrency === activeCountry.currencyCode &&
+    input.annualLiving < activeCountry.statutoryAnnualLivingProof;
+
+  // Filter verified scholarships strictly matching the active destination country
+  const matchingVerifiedScholarships = useMemo(() => {
+    return SCHOLARSHIPS_DATA.filter((s) => {
+      if (!s.isVerified) return false;
+      const matchesCountry =
+        s.hostCountries.includes('Multiple') ||
+        s.hostCountries.includes('Multiple European Countries') ||
+        s.hostCountries.some((c) => c.toLowerCase() === activeCountry.name.toLowerCase());
+      return matchesCountry;
+    });
+  }, [activeCountry]);
+
+  // Handle itemized pre-departure change and update oneTimeExpenses total
+  const handleItemizedChange = (field: keyof typeof input.preDepartureCosts, value: number) => {
+    const updatedCosts = {
+      ...input.preDepartureCosts,
+      [field]: Math.max(0, value),
+    };
+    const newTotal = sumItemizedPreDeparture(updatedCosts);
+    setInput((prev) => ({
+      ...prev,
+      preDepartureCosts: updatedCosts,
+      oneTimeExpenses: newTotal,
+    }));
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -215,7 +267,10 @@ export const BudgetCalculatorPage: React.FC = () => {
             Study Abroad Budget Calculator
           </h1>
           <p className="text-sm text-slate-600 mt-1 max-w-2xl">
-            Simulate your complete financial lifecycle: one-time pre-departure expenses, annual recurring tuition and living, and measure your exact family funding shortfall in PKR.
+            Simulate your complete financial lifecycle: one-time pre-departure expenses, annual recurring tuition and living, and measure your exact family funding gap in PKR.
+          </p>
+          <p className="text-xs text-slate-500 mt-1 italic">
+            {result.calculationAssumptionNotice}
           </p>
         </div>
 
@@ -270,6 +325,7 @@ export const BudgetCalculatorPage: React.FC = () => {
         </div>
         <div className="flex flex-wrap gap-2">
           {[
+            { id: 'pkr-audit-benchmark', label: '🇵🇰 3-Yr Audit Case (1.7M/yr)', desc: '1M Tuition, 600k Living, 100k Other, 200k One-Time' },
             { id: 'germany-master', label: '🇩🇪 Germany Public Uni (Blocked Account)', desc: '0 Tuition, €11,904 Living' },
             { id: 'usa-stem-master', label: '🇺🇸 USA State University (MS STEM)', desc: '$26k Tuition, $15.5k Living' },
             { id: 'uk-one-year-msc', label: '🇬🇧 UK 1-Year Master’s', desc: '£19.5k Tuition, 12 Mo Living' },
@@ -302,11 +358,11 @@ export const BudgetCalculatorPage: React.FC = () => {
               {/* Home Country */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                  Home Country & Currency
+                  Home Country & Base Currency
                 </label>
                 <div className="w-full px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg text-sm font-medium text-slate-800 flex items-center justify-between">
                   <span>🇵🇰 Pakistan (PKR - Pakistani Rupee)</span>
-                  <span className="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold">Default</span>
+                  <span className="text-[10px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded font-bold">Base</span>
                 </div>
               </div>
 
@@ -349,18 +405,28 @@ export const BudgetCalculatorPage: React.FC = () => {
                   <input
                     type="number"
                     step="0.1"
-                    min="1"
-                    value={input.exchangeRateToPKR}
-                    onChange={(e) =>
-                      setInput({ ...input, exchangeRateToPKR: parseFloat(e.target.value) || 0 })
-                    }
+                    min="0.0001"
+                    value={input.exchangeRateToPKR !== null && input.exchangeRateToPKR !== undefined ? input.exchangeRateToPKR : ''}
+                    placeholder="Enter rate or leave empty if unknown"
+                    onChange={(e) => {
+                      const val = e.target.value.trim() === '' ? null : parseFloat(e.target.value);
+                      setInput({
+                        ...input,
+                        exchangeRateToPKR: isNaN(val as number) ? null : val,
+                        isExchangeRateUserProvided: true,
+                      });
+                    }}
                     className="w-full pl-12 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-mono font-bold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={() =>
-                    setInput({ ...input, exchangeRateToPKR: activeCountry.defaultExchangeRateToPKR })
+                    setInput({
+                      ...input,
+                      exchangeRateToPKR: activeCountry.defaultExchangeRateToPKR,
+                      isExchangeRateUserProvided: false,
+                    })
                   }
                   className="px-2.5 py-2 text-xs font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors whitespace-nowrap cursor-pointer"
                 >
@@ -369,7 +435,7 @@ export const BudgetCalculatorPage: React.FC = () => {
               </div>
 
               <p className="text-[11px] text-slate-500 italic">
-                * Note: This is a user-editable rate. Currency rates fluctuate daily; please verify the actual telegraphic transfer (TT) or cash rate with your foreign exchange provider.
+                * Note: User-provided rate. Rates fluctuate daily; verify with your foreign exchange provider. If left blank or invalid, cross-currency conversions will display as "Conversion unavailable" without fabricating values.
               </p>
             </div>
 
@@ -402,45 +468,100 @@ export const BudgetCalculatorPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Card 2: Annual Recurring Costs (Tuition + Living + Insurance) */}
+          {/* Card 2: Annual Recurring Costs (Tuition + Living + Insurance + Semester Fees) */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h2 className="text-base font-bold text-slate-900 flex items-center space-x-2">
-                <span className="w-6 h-6 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">2</span>
-                <span>Annual Recurring Expenses ({activeCountry.currencyCode})</span>
-              </h2>
-              <span className="text-xs text-slate-500 font-mono">
-                Total: {formatCurrency(result.annualRecurringForeign, activeCountry.currencyCode)}/yr
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-2">
+              <div>
+                <h2 className="text-base font-bold text-slate-900 flex items-center space-x-2">
+                  <span className="w-6 h-6 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">2</span>
+                  <span>Annual Recurring Expenses</span>
+                </h2>
+                <span className="text-[11px] text-slate-500">
+                  annualRecurringCost = annualTuition + annualLiving + annualInsurance + annualSemesterFees
+                </span>
+              </div>
+
+              {/* Expense Currency Switcher */}
+              <div className="flex items-center space-x-1.5 bg-slate-100 p-1 rounded-lg">
+                <span className="text-[10px] font-bold text-slate-500 px-1 uppercase">Input In:</span>
+                <button
+                  type="button"
+                  onClick={() => setInput({ ...input, expenseCurrency: activeCountry.currencyCode })}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                    input.expenseCurrency === activeCountry.currencyCode
+                      ? 'bg-white text-blue-700 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  {activeCountry.currencyCode}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInput({ ...input, expenseCurrency: 'PKR' })}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                    input.expenseCurrency === 'PKR'
+                      ? 'bg-white text-blue-700 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  PKR
+                </button>
+              </div>
+            </div>
+
+            {/* Annual Recurring Cost Subtotal Display */}
+            <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-200 flex items-center justify-between">
+              <span className="text-xs font-bold text-blue-900 uppercase tracking-wider">
+                Annual Recurring Cost:
               </span>
+              <div className="text-right">
+                <span className="text-sm font-bold text-blue-900 font-mono block">
+                  {formatCurrency(result.annualRecurringCostInput, input.expenseCurrency)}/yr
+                </span>
+                {input.expenseCurrency !== 'PKR' && (
+                  <span className="text-[11px] text-blue-700 font-mono block">
+                    ≈ {formatCurrency(result.annualRecurringCostBase, 'PKR')}/yr
+                  </span>
+                )}
+                {input.expenseCurrency === 'PKR' && result.annualRecurringCostForeign !== null && (
+                  <span className="text-[11px] text-blue-700 font-mono block">
+                    ≈ {formatCurrency(result.annualRecurringCostForeign, activeCountry.currencyCode)}/yr
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Annual Tuition Fee */}
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="text-xs font-semibold text-slate-800">
-                  Annual Tuition Fee ({activeCountry.currencyCode})
+                  Annual Tuition Fee ({input.expenseCurrency})
                 </label>
-                <span className="text-xs text-slate-500 font-mono">
-                  = {formatCurrency(input.annualTuitionForeign * input.exchangeRateToPKR, 'PKR')}/yr
-                </span>
+                {input.expenseCurrency !== 'PKR' && result.isExchangeRateValid && (
+                  <span className="text-xs text-slate-500 font-mono">
+                    ≈ {formatCurrency(input.annualTuition * (result.exchangeRateUsed || 1), 'PKR')}/yr
+                  </span>
+                )}
               </div>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-slate-500 font-mono">
-                  {activeCountry.currencySymbol}
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-slate-500 font-mono font-bold">
+                  {input.expenseCurrency === 'PKR' ? 'PKR' : activeCountry.currencySymbol}
                 </span>
                 <input
                   type="number"
                   min="0"
-                  value={input.annualTuitionForeign}
+                  value={input.annualTuition}
                   onChange={(e) =>
-                    setInput({ ...input, annualTuitionForeign: Math.max(0, parseFloat(e.target.value) || 0) })
+                    setInput({ ...input, annualTuition: Math.max(0, parseFloat(e.target.value) || 0) })
                   }
-                  className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-mono font-semibold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-600"
-                  placeholder="0 (Tuition Free or specify)"
+                  className="w-full pl-12 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-mono font-semibold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-600"
+                  placeholder="0"
                 />
               </div>
               <p className="text-[11px] text-slate-500 mt-1">
-                For Germany public universities, this is typically €0. For USA/UK/Canada/Australia, enter annual international tuition.
+                {activeCountry.id === 'germany'
+                  ? 'Note: Many German public universities charge €0 general tuition, except in Baden-Württemberg (€1,500/sem) and TUM in Bavaria. Check your specific faculty.'
+                  : `Enter the expected annual tuition in ${input.expenseCurrency}.`}
               </p>
             </div>
 
@@ -448,24 +569,26 @@ export const BudgetCalculatorPage: React.FC = () => {
             <div>
               <div className="flex justify-between items-center mb-1">
                 <label className="text-xs font-semibold text-slate-800">
-                  Annual Living Expenses (Rent, Food, Utilities, Transport in {activeCountry.currencyCode})
+                  Annual Living Expenses (Rent, Food, Utilities, Transit in {input.expenseCurrency})
                 </label>
-                <span className="text-xs text-slate-500 font-mono">
-                  = {formatCurrency(input.annualLivingForeign * input.exchangeRateToPKR, 'PKR')}/yr
-                </span>
+                {input.expenseCurrency !== 'PKR' && result.isExchangeRateValid && (
+                  <span className="text-xs text-slate-500 font-mono">
+                    ≈ {formatCurrency(input.annualLiving * (result.exchangeRateUsed || 1), 'PKR')}/yr
+                  </span>
+                )}
               </div>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-slate-500 font-mono">
-                  {activeCountry.currencySymbol}
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-slate-500 font-mono font-bold">
+                  {input.expenseCurrency === 'PKR' ? 'PKR' : activeCountry.currencySymbol}
                 </span>
                 <input
                   type="number"
                   min="0"
-                  value={input.annualLivingForeign}
+                  value={input.annualLiving}
                   onChange={(e) =>
-                    setInput({ ...input, annualLivingForeign: Math.max(0, parseFloat(e.target.value) || 0) })
+                    setInput({ ...input, annualLiving: Math.max(0, parseFloat(e.target.value) || 0) })
                   }
-                  className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-mono font-semibold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-600"
+                  className="w-full pl-12 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-mono font-semibold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-600"
                 />
               </div>
               {/* Statutory Warning */}
@@ -473,58 +596,58 @@ export const BudgetCalculatorPage: React.FC = () => {
                 <div className="mt-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-start space-x-2">
                   <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
                   <div>
-                    <span className="font-bold">Official Living Proof Warning: </span>
-                    {activeCountry.name} requires proving at least {activeCountry.currencySymbol}{' '}
+                    <span className="font-bold">Official Living Benchmark Notice: </span>
+                    {activeCountry.name} requires proof of at least {activeCountry.currencySymbol}{' '}
                     {activeCountry.statutoryAnnualLivingProof.toLocaleString()} per year for student visa issuance ({activeCountry.officialProofOfFundsRequirement}). Entering a lower figure might understate your required embassy proof.
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Health Insurance & Miscellaneous */}
+            {/* Health Insurance & Semester Fees */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-800 mb-1">
-                  Annual Health Insurance ({activeCountry.currencyCode})
+                  Annual Health Insurance ({input.expenseCurrency})
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-slate-500 font-mono">
-                    {activeCountry.currencySymbol}
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-slate-500 font-mono font-bold">
+                    {input.expenseCurrency === 'PKR' ? 'PKR' : activeCountry.currencySymbol}
                   </span>
                   <input
                     type="number"
                     min="0"
-                    value={input.annualHealthInsuranceForeign}
+                    value={input.annualInsurance}
                     onChange={(e) =>
                       setInput({
                         ...input,
-                        annualHealthInsuranceForeign: Math.max(0, parseFloat(e.target.value) || 0),
+                        annualInsurance: Math.max(0, parseFloat(e.target.value) || 0),
                       })
                     }
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-mono font-semibold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-600"
+                    className="w-full pl-12 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-mono font-semibold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-800 mb-1">
-                  Annual Semester / Admin Fee ({activeCountry.currencyCode})
+                  Annual Semester / Admin Fees ({input.expenseCurrency})
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-slate-500 font-mono">
-                    {activeCountry.currencySymbol}
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-slate-500 font-mono font-bold">
+                    {input.expenseCurrency === 'PKR' ? 'PKR' : activeCountry.currencySymbol}
                   </span>
                   <input
                     type="number"
                     min="0"
-                    value={input.annualMiscellaneousForeign}
+                    value={input.annualSemesterFees}
                     onChange={(e) =>
                       setInput({
                         ...input,
-                        annualMiscellaneousForeign: Math.max(0, parseFloat(e.target.value) || 0),
+                        annualSemesterFees: Math.max(0, parseFloat(e.target.value) || 0),
                       })
                     }
-                    className="w-full pl-9 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-mono font-semibold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-600"
+                    className="w-full pl-12 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-mono font-semibold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-600"
                   />
                 </div>
               </div>
@@ -539,34 +662,65 @@ export const BudgetCalculatorPage: React.FC = () => {
                   <span className="w-6 h-6 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">3</span>
                   <span>One-Time Pre-Departure Costs</span>
                 </h2>
-                <p className="text-xs text-slate-500">Expenses before departure (attestations, visa, IELTS, airfare)</p>
+                <p className="text-xs text-slate-500">
+                  Calculated strictly from actual itemized inputs (charged once before departure)
+                </p>
               </div>
               <div className="text-right">
                 <span className="text-xs font-mono font-bold text-blue-700 block">
                   {formatCurrency(result.oneTimePreDeparturePKR, 'PKR')}
                 </span>
                 <span className="text-[10px] text-slate-500 font-mono">
-                  ~{formatCurrency(result.oneTimePreDepartureForeign, activeCountry.currencyCode)}
+                  {result.oneTimePreDepartureForeign !== null
+                    ? `~${formatCurrency(result.oneTimePreDepartureForeign, activeCountry.currencyCode)}`
+                    : 'Conversion unavailable'}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
+            {/* Total One-Time Pre-Departure Input */}
+            <div>
+              <div className="flex justify-between items-center mb-1">
+                <label className="text-xs font-semibold text-slate-800">
+                  One-Time Expenses Total (PKR)
+                </label>
+                <span className="text-xs text-slate-500">
+                  {formatPakistaniDenominations(input.oneTimeExpenses)}
+                </span>
+              </div>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-slate-500 font-mono font-bold">
+                  PKR
+                </span>
+                <input
+                  type="number"
+                  min="0"
+                  value={input.oneTimeExpenses}
+                  onChange={(e) => {
+                    const val = Math.max(0, parseFloat(e.target.value) || 0);
+                    setInput({ ...input, oneTimeExpenses: val });
+                  }}
+                  className="w-full pl-12 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-mono font-semibold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-600"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
               <span className="text-xs text-slate-600">
-                Itemized breakdown of Pakistan departure setup expenses:
+                Itemized breakdown helper (attestations, visa, IELTS, airfare):
               </span>
               <button
                 type="button"
                 onClick={() => setShowPreDepartureDetails(!showPreDepartureDetails)}
                 className="text-xs font-semibold text-blue-700 hover:text-blue-800 flex items-center space-x-1 cursor-pointer"
               >
-                <span>{showPreDepartureDetails ? 'Collapse Details' : 'Expand & Edit Breakdown'}</span>
+                <span>{showPreDepartureDetails ? 'Collapse Breakdown' : 'Expand & Edit Itemized Breakdown'}</span>
                 {showPreDepartureDetails ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
               </button>
             </div>
 
             {showPreDepartureDetails && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                 <div>
                   <label className="block text-[11px] font-semibold text-slate-700 mb-1">
                     Document Attestation (HEC, IBCC, MOFA) [PKR]
@@ -574,15 +728,7 @@ export const BudgetCalculatorPage: React.FC = () => {
                   <input
                     type="number"
                     value={input.preDepartureCosts.documentAttestationPKR}
-                    onChange={(e) =>
-                      setInput({
-                        ...input,
-                        preDepartureCosts: {
-                          ...input.preDepartureCosts,
-                          documentAttestationPKR: parseFloat(e.target.value) || 0,
-                        },
-                      })
-                    }
+                    onChange={(e) => handleItemizedChange('documentAttestationPKR', parseFloat(e.target.value) || 0)}
                     className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-semibold"
                   />
                 </div>
@@ -594,55 +740,31 @@ export const BudgetCalculatorPage: React.FC = () => {
                   <input
                     type="number"
                     value={input.preDepartureCosts.ieltsExamFeePKR}
-                    onChange={(e) =>
-                      setInput({
-                        ...input,
-                        preDepartureCosts: {
-                          ...input.preDepartureCosts,
-                          ieltsExamFeePKR: parseFloat(e.target.value) || 0,
-                        },
-                      })
-                    }
+                    onChange={(e) => handleItemizedChange('ieltsExamFeePKR', parseFloat(e.target.value) || 0)}
                     className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-semibold"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                    University Application Fees (uni-assist / direct) [PKR]
+                    University Application Fees [PKR]
                   </label>
                   <input
                     type="number"
                     value={input.preDepartureCosts.universityApplicationFeesPKR}
-                    onChange={(e) =>
-                      setInput({
-                        ...input,
-                        preDepartureCosts: {
-                          ...input.preDepartureCosts,
-                          universityApplicationFeesPKR: parseFloat(e.target.value) || 0,
-                        },
-                      })
-                    }
+                    onChange={(e) => handleItemizedChange('universityApplicationFeesPKR', parseFloat(e.target.value) || 0)}
                     className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-semibold"
                   />
                 </div>
 
                 <div>
                   <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                    Visa Application & Gerry’s/VFS Biometrics [PKR]
+                    Visa Application & Biometrics [PKR]
                   </label>
                   <input
                     type="number"
                     value={input.preDepartureCosts.visaAndBiometricFeePKR}
-                    onChange={(e) =>
-                      setInput({
-                        ...input,
-                        preDepartureCosts: {
-                          ...input.preDepartureCosts,
-                          visaAndBiometricFeePKR: parseFloat(e.target.value) || 0,
-                        },
-                      })
-                    }
+                    onChange={(e) => handleItemizedChange('visaAndBiometricFeePKR', parseFloat(e.target.value) || 0)}
                     className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-semibold"
                   />
                 </div>
@@ -654,15 +776,7 @@ export const BudgetCalculatorPage: React.FC = () => {
                   <input
                     type="number"
                     value={input.preDepartureCosts.airfarePKR}
-                    onChange={(e) =>
-                      setInput({
-                        ...input,
-                        preDepartureCosts: {
-                          ...input.preDepartureCosts,
-                          airfarePKR: parseFloat(e.target.value) || 0,
-                        },
-                      })
-                    }
+                    onChange={(e) => handleItemizedChange('airfarePKR', parseFloat(e.target.value) || 0)}
                     className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-semibold"
                   />
                 </div>
@@ -674,15 +788,7 @@ export const BudgetCalculatorPage: React.FC = () => {
                   <input
                     type="number"
                     value={input.preDepartureCosts.miscellaneousSetupPKR}
-                    onChange={(e) =>
-                      setInput({
-                        ...input,
-                        preDepartureCosts: {
-                          ...input.preDepartureCosts,
-                          miscellaneousSetupPKR: parseFloat(e.target.value) || 0,
-                        },
-                      })
-                    }
+                    onChange={(e) => handleItemizedChange('miscellaneousSetupPKR', parseFloat(e.target.value) || 0)}
                     className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-mono font-semibold"
                   />
                 </div>
@@ -692,18 +798,23 @@ export const BudgetCalculatorPage: React.FC = () => {
 
           {/* Card 4: Available Student/Family Funding in PKR */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center space-x-2">
-              <span className="w-6 h-6 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">4</span>
-              <span>Available Family & Personal Resources (PKR)</span>
-            </h2>
+            <div>
+              <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-2 flex items-center space-x-2">
+                <span className="w-6 h-6 rounded-md bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">4</span>
+                <span>Available Family & Personal Resources (PKR)</span>
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Clearly distinguishes cash available before departure from recurring annual sponsorship.
+              </p>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-semibold text-slate-800 mb-1">
-                  Available One-Time Lump Sum (PKR)
+                  Available One-Time Funds (Savings / Liquid Cash in PKR)
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-slate-500 font-mono">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-slate-500 font-mono font-bold">
                     PKR
                   </span>
                   <input
@@ -720,16 +831,16 @@ export const BudgetCalculatorPage: React.FC = () => {
                   />
                 </div>
                 <span className="text-[11px] text-slate-500 mt-1 block">
-                  {formatPakistaniDenominations(input.availableOneTimeFundsPKR)} (Savings, family assets)
+                  {formatPakistaniDenominations(input.availableOneTimeFundsPKR)} (Available before departure)
                 </span>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-800 mb-1">
-                  Available Annual Sponsorship (PKR/Year)
+                  Annual Sponsorship (Recurring Family Support in PKR/Year)
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-slate-500 font-mono">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-xs text-slate-500 font-mono font-bold">
                     PKR
                   </span>
                   <input
@@ -746,9 +857,19 @@ export const BudgetCalculatorPage: React.FC = () => {
                   />
                 </div>
                 <span className="text-[11px] text-slate-500 mt-1 block">
-                  {formatPakistaniDenominations(input.availableAnnualBudgetPKR)} /year recurring
+                  {formatPakistaniDenominations(input.availableAnnualBudgetPKR)} /year (Paid annually across {input.studyDurationYears} yrs)
                 </span>
               </div>
+            </div>
+
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 space-y-1">
+              <div className="flex justify-between font-semibold text-slate-800">
+                <span>Total Available Resources Over Degree:</span>
+                <span className="font-mono text-blue-700">{formatCurrency(result.totalAvailableResourcesBase, 'PKR')}</span>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                = Available One-Time Savings ({formatCurrency(input.availableOneTimeFundsPKR, 'PKR')}) + [Annual Sponsorship ({formatCurrency(input.availableAnnualBudgetPKR, 'PKR')}) × {input.studyDurationYears} years]
+              </p>
             </div>
           </div>
         </div>
@@ -766,18 +887,18 @@ export const BudgetCalculatorPage: React.FC = () => {
               }`}
             >
               <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider opacity-90 mb-1">
-                <span>{result.isShortfall ? 'Budget Shortfall Identified' : 'Budget Comfortably Funded'}</span>
+                <span>{result.isShortfall ? 'Total Degree Funding Gap' : 'Budget Surplus Available'}</span>
                 <span>{input.studyDurationYears} Year Plan</span>
               </div>
               <div className="text-2xl sm:text-3xl font-extrabold tracking-tight">
                 {result.isShortfall
-                  ? `-${formatCurrency(result.shortfallPKR, 'PKR')}`
-                  : `+${formatCurrency(result.surplusPKR, 'PKR')}`}
+                  ? formatCurrency(result.totalDegreeFundingGapBase, 'PKR')
+                  : formatCurrency(result.budgetSurplusBase, 'PKR')}
               </div>
               <div className="text-xs opacity-90 mt-1 font-medium">
                 {result.isShortfall
-                  ? `Funding gap: ${formatPakistaniDenominations(result.shortfallPKR)}`
-                  : `Surplus: ${formatPakistaniDenominations(result.surplusPKR)}`}
+                  ? `Funding gap: ${formatPakistaniDenominations(result.totalDegreeFundingGapBase)} (Degree Cost − Available Resources)`
+                  : `Surplus: ${formatPakistaniDenominations(result.budgetSurplusBase)} (Resources exceed Total Cost)`}
               </div>
             </div>
 
@@ -789,10 +910,12 @@ export const BudgetCalculatorPage: React.FC = () => {
                     1st-Year Total Cost
                   </span>
                   <span className="text-sm font-bold text-slate-900 block font-mono">
-                    {formatCurrency(result.firstYearTotalPKR, 'PKR')}
+                    {formatCurrency(result.firstYearCostBase, 'PKR')}
                   </span>
                   <span className="text-[10px] text-slate-500 font-mono block">
-                    ~{formatCurrency(result.firstYearTotalForeign, activeCountry.currencyCode)}
+                    {result.firstYearCostForeign !== null
+                      ? `~${formatCurrency(result.firstYearCostForeign, activeCountry.currencyCode)}`
+                      : 'Conversion unavailable'}
                   </span>
                 </div>
 
@@ -801,10 +924,12 @@ export const BudgetCalculatorPage: React.FC = () => {
                     Annual Recurring Cost
                   </span>
                   <span className="text-sm font-bold text-slate-900 block font-mono">
-                    {formatCurrency(result.annualRecurringPKR, 'PKR')}/yr
+                    {formatCurrency(result.annualRecurringCostBase, 'PKR')}/yr
                   </span>
                   <span className="text-[10px] text-slate-500 font-mono block">
-                    ~{formatCurrency(result.annualRecurringForeign, activeCountry.currencyCode)}/yr
+                    {result.annualRecurringCostForeign !== null
+                      ? `~${formatCurrency(result.annualRecurringCostForeign, activeCountry.currencyCode)}/yr`
+                      : 'Conversion unavailable'}
                   </span>
                 </div>
               </div>
@@ -816,34 +941,59 @@ export const BudgetCalculatorPage: React.FC = () => {
                     Total Degree Cost ({input.studyDurationYears} Year{input.studyDurationYears > 1 ? 's' : ''})
                   </span>
                   <span className="text-base font-extrabold text-blue-900 font-mono">
-                    {formatCurrency(result.totalDegreeCostPKR, 'PKR')}
+                    {formatCurrency(result.totalDegreeCostBase, 'PKR')}
                   </span>
                   <span className="text-[11px] text-blue-700 block font-medium">
-                    {formatPakistaniDenominations(result.totalDegreeCostPKR)}
+                    {formatPakistaniDenominations(result.totalDegreeCostBase)}
                   </span>
                 </div>
                 <div className="text-right font-mono">
                   <span className="text-xs font-bold text-blue-800 block">
-                    {formatCurrency(result.totalDegreeCostForeign, activeCountry.currencyCode)}
+                    {result.totalDegreeCostForeign !== null
+                      ? formatCurrency(result.totalDegreeCostForeign, activeCountry.currencyCode)
+                      : 'Conversion unavailable'}
                   </span>
-                  <span className="text-[10px] text-blue-600 block">Foreign Currency</span>
+                  <span className="text-[10px] text-blue-600 block">
+                    (Annual × {input.studyDurationYears}) + One-Time
+                  </span>
                 </div>
               </div>
 
-              {/* Crucial Upfront Metric: Needed Before Departure */}
-              <div className="p-3.5 rounded-xl bg-slate-900 text-white space-y-1.5">
+              {/* Crucial Upfront Metric: Needed Before Boarding Flight */}
+              <div className="p-3.5 rounded-xl bg-slate-900 text-white space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] uppercase font-bold tracking-wider text-blue-300">
-                    Est. Needed Before Boarding Flight
+                    Actual Pre-Departure Expenses (Before Boarding)
                   </span>
                   <span className="text-xs font-mono font-bold text-emerald-400">
-                    {formatCurrency(result.estimatedBeforeDepartureNeededPKR, 'PKR')}
+                    {formatCurrency(result.oneTimePreDepartureCostsBase, 'PKR')}
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-300 leading-snug">
-                  Covers one-time setup ({formatCurrency(result.oneTimePreDeparturePKR, 'PKR')}) plus visa proof of funds / blocked account deposit.
+                  Calculated strictly from your actual itemized inputs. Cash available from savings: {formatCurrency(input.availableOneTimeFundsPKR, 'PKR')}. Pre-departure cash gap: {formatCurrency(result.preDepartureCashGapBase, 'PKR')}.
                 </p>
               </div>
+
+              {/* Verified Visa Financial Proof (Evidence of Funds - Separately Displayed) */}
+              {result.hasVerifiedVisaProofRequirement && (
+                <div className="p-3.5 rounded-xl bg-amber-50/80 border border-amber-300 space-y-1.5 text-xs text-amber-950">
+                  <div className="flex items-center justify-between font-bold text-amber-900">
+                    <span className="flex items-center space-x-1">
+                      <ShieldCheck className="w-4 h-4 text-amber-600" />
+                      <span>Destination Visa Financial Proof</span>
+                    </span>
+                    <span className="font-mono">
+                      {formatCurrency(result.statutoryAnnualLivingProofForeign, activeCountry.currencyCode)}
+                      {result.statutoryAnnualLivingProofBase !== null
+                        ? ` (≈ ${formatCurrency(result.statutoryAnnualLivingProofBase, 'PKR')})`
+                        : ''}
+                    </span>
+                  </div>
+                  <p className="text-[11px] leading-relaxed text-amber-900">
+                    <strong>Evidence of Funds, Not an Additional Cost:</strong> This is statutory financial proof required for your visa application ({result.statutoryProofDescription}). These funds are not an extra fee on top of your degree costs; they are deposited to pay for your actual living expenses and rent once you arrive.
+                  </p>
+                </div>
+              )}
 
               {/* Visual Breakdown Bar */}
               <div className="space-y-1.5 pt-2">
@@ -890,22 +1040,36 @@ export const BudgetCalculatorPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Action Recommendation */}
+              {/* Action Recommendation & Verified Matching Advice */}
               <div className="pt-2 border-t border-slate-100">
                 {result.isShortfall ? (
                   <div className="text-xs text-slate-600 space-y-2">
                     <p className="font-semibold text-slate-800">
-                      Recommendation for this shortfall:
+                      Verified Guidance for this Funding Gap ({formatCurrency(result.totalDegreeFundingGapBase, 'PKR')}):
                     </p>
                     <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px]">
-                      <li>Target 100% tuition-waiver scholarships or government grants (GKS, DAAD EPOS, Chevening).</li>
-                      <li>Consider Germany where public university tuition is €0.</li>
-                      <li>Verify part-time work permissions to offset living costs ({activeCountry.partTimeWorkRights}).</li>
+                      {matchingVerifiedScholarships.length > 0 ? (
+                        matchingVerifiedScholarships.slice(0, 2).map((sch) => (
+                          <li key={sch.id}>
+                            Explore verified scholarship: <strong>{sch.name}</strong> ({sch.fundingType}) by {sch.provider}.
+                          </li>
+                        ))
+                      ) : (
+                        <li>Verify departmental graduate assistantships or institutional fee waivers directly with target universities.</li>
+                      )}
+                      <li>
+                        <strong>Work Permission ({activeCountry.name}):</strong> {activeCountry.partTimeWorkRights}.
+                      </li>
+                      {activeCountry.id === 'germany' && (
+                        <li>
+                          Note for Germany: Baden-Württemberg charges €1,500/semester for non-EU students and TUM charges tuition, while other federal states charge semester administrative contributions (€150–€400/semester).
+                        </li>
+                      )}
                     </ul>
                   </div>
                 ) : (
                   <div className="text-xs text-emerald-800 bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">
-                    <span className="font-bold">Funding Capacity Verified:</span> Your planned capital covers baseline requirements. Maintain funds in your bank account for the required tenure (e.g. 28 days for UK) to secure the visa without delays.
+                    <span className="font-bold">Funding Capacity Verified:</span> Your reported resources cover the projected baseline degree cost with a surplus of {formatCurrency(result.budgetSurplusBase, 'PKR')}.
                   </div>
                 )}
               </div>

@@ -1,6 +1,6 @@
 {
   "name": "GlobalEdu - Study Abroad Budget & Scholarship Finder",
-  "description": "Professional study abroad financial planning calculator, realistic country comparisons, university tuition guides, and verified scholarship directory for international students.",
+  "description": "Estimate study abroad costs in PKR and foreign currencies, calculate pre-departure funding gaps, compare destinations, and find verified scholarships.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

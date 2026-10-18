@@ -290,9 +290,9 @@ export const UniversityComparisonPage: React.FC<UniversityComparisonPageProps> =
 
       {/* Directory of all Universities */}
       <div className="space-y-4">
-        <h3 className="text-lg font-bold text-slate-900">
+        <h2 className="text-lg font-bold text-slate-900">
           All Verified Institutional Records
-        </h3>
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {UNIVERSITIES_DATA.map((u) => (
             <div
@@ -301,7 +301,7 @@ export const UniversityComparisonPage: React.FC<UniversityComparisonPageProps> =
             >
               <div>
                 <div className="flex items-start justify-between">
-                  <h4 className="font-bold text-base text-slate-900">{u.name}</h4>
+                  <h3 className="font-bold text-base text-slate-900">{u.name}</h3>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700">
                     {u.country}
                   </span>

@@ -123,7 +123,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
                 <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
                   <div>
-                    <h3 className="font-bold text-slate-900 text-base">Quick Cost Snapshot</h3>
+                    <h2 className="font-bold text-slate-900 text-base">Quick Cost Snapshot</h2>
                     <p className="text-xs text-slate-500">Typical 1st-Year Financial Benchmarks</p>
                   </div>
                   <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 border border-blue-100">
@@ -141,7 +141,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                         className="p-3 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/40 transition-all cursor-pointer flex items-center justify-between group"
                       >
                         <div className="flex items-center space-x-3">
-                          <span className="text-2xl">{c.flag}</span>
+                          <span className="text-2xl" aria-hidden="true">{c.flag}</span>
                           <div>
                             <span className="font-bold text-sm text-slate-900 group-hover:text-blue-700 transition-colors">
                               {c.name}
@@ -155,7 +155,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                           <span className="text-xs font-mono font-bold text-slate-900 block">
                             ~{(sampleFirstYearPKR / 100000).toFixed(1)} Lakh PKR
                           </span>
-                          <span className="text-[10px] text-slate-400">Est. 1st-Yr Total</span>
+                          <span className="text-xs text-slate-500 font-medium">Est. 1st-Yr Total</span>
                         </div>
                       </div>
                     );
@@ -390,13 +390,15 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs transition-all"
               >
                 <button
+                  type="button"
                   onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                  aria-expanded={isOpen}
                   className="w-full p-4 sm:p-5 text-left flex items-center justify-between space-x-4 cursor-pointer hover:bg-slate-50/80 transition-colors"
                 >
                   <span className="font-semibold text-sm sm:text-base text-slate-900">
                     {faq.q}
                   </span>
-                  <div className="p-1 rounded-full bg-slate-100 text-slate-600 shrink-0">
+                  <div className="p-1 rounded-full bg-slate-100 text-slate-600 shrink-0" aria-hidden="true">
                     {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </div>
                 </button>

@@ -42,7 +42,7 @@ export const COUNTRIES_DATA: Country[] = [
         sourceType: 'Government',
       },
     ],
-    notes: 'Public universities in most federal states charge zero tuition fee for international students, with only semester administrative contributions (€150–€350/semester including public transit pass). Exception: State of Baden-Württemberg charges €1,500/semester for non-EU students.',
+    notes: 'Tuition fees vary by federal state and institution: while many public universities do not charge general tuition fees, non-EU international students must pay €1,500/semester in Baden-Württemberg, and Technical University of Munich (TUM in Bavaria) introduced non-EU tuition in 2024. All public universities require a mandatory semester contribution (Semesterbeitrag, €150–€400/semester).',
   },
   {
     id: 'south-korea',
@@ -60,7 +60,7 @@ export const COUNTRIES_DATA: Country[] = [
     officialProofOfFundsRequirement: 'D-2 Visa bank statement showing approx. $16,000–$20,000 USD (higher for universities in the Seoul National Capital Area).',
     statutoryAnnualLivingProof: 16000,
     visaProcessingWeeks: '3 to 6 weeks',
-    partTimeWorkRights: 'Up to 20-30 hours per week during term (depending on TOPIK Korean language level) and unlimited during vacations',
+    partTimeWorkRights: 'Up to 20-25 hours per week during term with university and immigration S-3 permit (contingent on TOPIK Korean language level); full-time during vacations',
     postStudyWorkVisa: 'D-10 Job Seeker Visa valid up to 2 years for qualified bachelor/master graduates',
     popularSubjects: ['Artificial Intelligence', 'Robotics', 'Electrical Engineering', 'Semiconductors', 'Biotechnology'],
     officialLinks: [
@@ -93,7 +93,7 @@ export const COUNTRIES_DATA: Country[] = [
     officialProofOfFundsRequirement: 'Form I-20 requirement: Must prove liquid funds covering 100% of the first year tuition + living + insurance expenses as certified by university.',
     statutoryAnnualLivingProof: 18000,
     visaProcessingWeeks: '4 to 10 weeks (Subject to F-1 interview appointment slot availability at US Embassy Islamabad / Consulate Karachi)',
-    partTimeWorkRights: 'Up to 20 hours/week strictly on-campus during academic terms; 40 hours/week during official breaks',
+    partTimeWorkRights: 'Up to 20 hours/week strictly on-campus during academic terms per 8 CFR 214.2(f)(9); off-campus work generally prohibited during first academic year',
     postStudyWorkVisa: 'Optional Practical Training (OPT) for 12 months, plus 24-month STEM OPT Extension (total 36 months for STEM majors)',
     popularSubjects: ['Computer Science', 'Artificial Intelligence', 'Data Engineering', 'Business Analytics', 'Biomedical Sciences'],
     officialLinks: [
@@ -131,7 +131,7 @@ export const COUNTRIES_DATA: Country[] = [
     officialProofOfFundsRequirement: 'IRCC mandatory living cost proof updated to CAD $20,635 per year for a single applicant (in addition to first year tuition fee).',
     statutoryAnnualLivingProof: 20635,
     visaProcessingWeeks: '7 to 12 weeks for Pakistani applicants under regular study permit streams',
-    partTimeWorkRights: '20 hours per week off-campus during academic sessions; full-time during scheduled study breaks',
+    partTimeWorkRights: 'Up to 20-24 hours/week off-campus during academic sessions per IRCC regulations; full-time during scheduled study breaks',
     postStudyWorkVisa: 'Post-Graduation Work Permit (PGWP) up to 3 years depending on program duration and qualifying institution',
     popularSubjects: ['Software Engineering', 'AI & Machine Learning', 'Data Science', 'Business Administration', 'Environmental Sciences'],
     officialLinks: [

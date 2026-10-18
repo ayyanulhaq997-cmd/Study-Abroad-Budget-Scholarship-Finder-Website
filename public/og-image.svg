@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="60%" stop-color="#1E293B" />
+      <stop offset="100%" stop-color="#0F172A" />
+    </linearGradient>
+    <linearGradient id="blueGlow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1D4ED8" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#3B82F6" stop-opacity="0.1" />
+    </linearGradient>
+    <linearGradient id="cardBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1E293B" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0.9" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)" />
+
+  <!-- Ambient background glow circles -->
+  <circle cx="1050" cy="120" r="320" fill="url(#blueGlow)" filter="blur(60px)" />
+  <circle cx="150" cy="520" r="240" fill="#1D4ED8" fill-opacity="0.25" filter="blur(80px)" />
+
+  <!-- Brand Header: Logo + Badge -->
+  <g transform="translate(80, 80)">
+    <!-- Logo Icon Box -->
+    <rect width="64" height="64" rx="16" fill="#1D4ED8" />
+    <!-- Graduation Cap Icon -->
+    <path d="M32 16 L12 26 L32 36 L52 26 Z" fill="#FFFFFF" />
+    <path d="M20 30.5 V42 C20 42 24 46 32 46 C40 46 44 42 44 42 V30.5" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+    <path d="M48 28.5 V41" stroke="#F59E0B" stroke-width="3" stroke-linecap="round" />
+    <circle cx="48" cy="43" r="2.5" fill="#F59E0B" />
+
+    <!-- Brand Name -->
+    <text x="84" y="44" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="38" font-weight="800" fill="#FFFFFF" letter-spacing="-0.5">GlobalEdu</text>
+    
+    <!-- PK Pill -->
+    <rect x="272" y="18" width="46" height="28" rx="6" fill="#1D4ED8" fill-opacity="0.3" stroke="#3B82F6" stroke-width="1.5" />
+    <text x="284" y="37" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14" font-weight="700" fill="#93C5FD">PK</text>
+  </g>
+
+  <!-- Headline -->
+  <text x="80" y="225" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="800" fill="#F8FAFC" letter-spacing="-1">
+    Study Abroad Budget &amp;
+  </text>
+  <text x="80" y="285" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="52" font-weight="800" fill="#60A5FA" letter-spacing="-1">
+    Scholarship Finder
+  </text>
+
+  <!-- Supporting Subtitle -->
+  <text x="80" y="345" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="400" fill="#94A3B8">
+    Transparent financial modeling in PKR, verified statutory living benchmarks,
+  </text>
+  <text x="80" y="378" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="400" fill="#94A3B8">
+    blocked accounts, and official international scholarships.
+  </text>
+
+  <!-- 4 Feature Cards -->
+  <g transform="translate(80, 440)">
+    <!-- Feature 1 -->
+    <rect x="0" y="0" width="240" height="110" rx="14" fill="url(#cardBg)" stroke="#334155" stroke-width="1.5" />
+    <circle cx="36" cy="36" r="16" fill="#1D4ED8" fill-opacity="0.3" />
+    <text x="30" y="42" font-family="sans-serif" font-size="16" fill="#60A5FA font-weight="bold">PKR</text>
+    <text x="24" y="75" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">Budget Calculator</text>
+    <text x="24" y="95" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" fill="#94A3B8">PKR &amp; Foreign Currencies</text>
+
+    <!-- Feature 2 -->
+    <rect x="265" y="0" width="240" height="110" rx="14" fill="url(#cardBg)" stroke="#334155" stroke-width="1.5" />
+    <circle cx="301" cy="36" r="16" fill="#10B981" fill-opacity="0.2" />
+    <text x="294" y="42" font-family="sans-serif" font-size="18" fill="#34D399">🌍</text>
+    <text x="289" y="75" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">6 Top Destinations</text>
+    <text x="289" y="95" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" fill="#94A3B8">Statutory Proof Benchmarks</text>
+
+    <!-- Feature 3 -->
+    <rect x="530" y="0" width="240" height="110" rx="14" fill="url(#cardBg)" stroke="#334155" stroke-width="1.5" />
+    <circle cx="566" cy="36" r="16" fill="#F59E0B" fill-opacity="0.2" />
+    <text x="559" y="42" font-family="sans-serif" font-size="18" fill="#FBBF24">🎓</text>
+    <text x="554" y="75" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">Scholarship Finder</text>
+    <text x="554" y="95" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" fill="#94A3B8">Eligibility Matcher Engine</text>
+
+    <!-- Feature 4 -->
+    <rect x="795" y="0" width="240" height="110" rx="14" fill="url(#cardBg)" stroke="#334155" stroke-width="1.5" />
+    <circle cx="831" cy="36" r="16" fill="#6366F1" fill-opacity="0.2" />
+    <text x="824" y="42" font-family="sans-serif" font-size="18" fill="#A5B4FC">🏛️</text>
+    <text x="819" y="75" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="700" fill="#FFFFFF">University Directory</text>
+    <text x="819" y="95" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="13" fill="#94A3B8">Verified Tuition &amp; Portals</text>
+  </g>
+
+  <!-- URL watermark -->
+  <text x="1120" y="590" text-anchor="end" font-family="monospace" font-size="14" fill="#64748B">study-abroad-budget-scholarship-fin-ochre.vercel.app</text>
+</svg>
