@@ -33,17 +33,26 @@ export interface Country {
   exchangeRateDate: string;
   typicalTuitionMin: number; // in local currency
   typicalTuitionMax: number;
-  typicalLivingMin: number;
+  typicalLivingMin: number; // actual estimated living
   typicalLivingMax: number;
   officialProofOfFundsRequirement: string;
-  statutoryAnnualLivingProof: number; // e.g. Germany Sperrkonto 11,904 EUR, Canada IRCC 20,635 CAD
+  statutoryAnnualLivingProof: number; // statutory baseline benchmark (e.g. Germany €11,904, Canada CAD $23,448)
+  statutoryLivingProofLondon?: number; // £13,761 for UK
+  statutoryLivingProofNonLondon?: number; // £10,539 for UK
+  statutoryProofDetails?: string;
   visaProcessingWeeks: string;
   partTimeWorkRights: string;
+  workRightsOfficialSource?: string;
   postStudyWorkVisa: string;
+  postStudyOfficialSource?: string;
   popularSubjects: string[];
   officialLinks: OfficialLink[];
   notes: string;
+  lastVerifiedDate: string;
+  officialSourceUrl: string;
 }
+
+export type ProgramStatus = 'Active' | 'Discontinued' | 'Awaiting Announcement' | 'Not Yet Verified';
 
 export interface Scholarship {
   id: string;
@@ -61,6 +70,11 @@ export interface Scholarship {
   officialUrl: string;
   lastVerifiedDate: string;
   isVerified: boolean;
+  programStatus?: ProgramStatus;
+  statusDetails?: string;
+  replacementProgramName?: string;
+  replacementProgramSummary?: string;
+  replacementProgramUrl?: string;
   benefitsSummary: string;
   eligibilityRequirements: string[];
   notesForPakistaniStudents?: string;
@@ -223,9 +237,15 @@ export interface MatcherRequirementCheck {
   details: string;
 }
 
+export type MatcherOverallStatus =
+  | 'Baseline Criteria Met'
+  | 'Partially Eligible'
+  | 'Not Eligible'
+  | 'Likely Eligible';
+
 export interface EligibilityMatchResult {
   scholarship: Scholarship;
-  overallStatus: 'Likely Eligible' | 'Partially Eligible' | 'Not Eligible';
+  overallStatus: MatcherOverallStatus;
   requirementsMet: MatcherRequirementCheck[];
   requirementsNotMet: MatcherRequirementCheck[];
   informationNeeded: MatcherRequirementCheck[];

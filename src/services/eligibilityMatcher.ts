@@ -7,6 +7,7 @@ import { SCHOLARSHIPS_DATA } from '../data/scholarshipsData';
 import {
   DegreeLevel,
   EligibilityMatchResult,
+  MatcherOverallStatus,
   MatcherRequirementCheck,
   Scholarship,
   SubjectCategory,
@@ -30,17 +31,30 @@ export function evaluateEligibility(
   const requirementsNotMet: MatcherRequirementCheck[] = [];
   const informationNeeded: MatcherRequirementCheck[] = [];
 
-  // Check 1: Verification status
-  if (!scholarship.isVerified) {
+  // Check 1: Program Operational Status
+  if (scholarship.programStatus === 'Discontinued') {
+    requirementsNotMet.push({
+      id: 'program-discontinued',
+      label: 'Program Status: Discontinued',
+      status: 'unmet',
+      details:
+        scholarship.statusDetails ||
+        'This scholarship program has concluded and no longer accepts new applications.',
+    });
+  }
+
+  // Check 2: Verification Status
+  if (!scholarship.isVerified || scholarship.programStatus === 'Not Yet Verified') {
     informationNeeded.push({
       id: 'verification-pending',
       label: 'Official Verification Status',
       status: 'needed',
-      details: 'This scholarship record is currently pending official verification by our editorial team. Requirements cannot be verified yet.',
+      details:
+        'This scholarship record is currently pending official verification by our editorial team. Requirements cannot be treated as confirmed facts.',
     });
   }
 
-  // Check 2: Degree Level Match
+  // Check 3: Degree Level Match
   const degreeMatches =
     profile.degreeLevel === 'Any' ||
     scholarship.degreeLevels.includes(profile.degreeLevel) ||
@@ -51,18 +65,18 @@ export function evaluateEligibility(
       id: 'degree-level',
       label: 'Intended Degree Level',
       status: 'met',
-      details: `Your degree level (${profile.degreeLevel}) matches the eligible levels: ${scholarship.degreeLevels.join(', ')}.`,
+      details: `Your degree level (${profile.degreeLevel}) aligns with published eligible levels: ${scholarship.degreeLevels.join(', ')}.`,
     });
   } else {
     requirementsNotMet.push({
       id: 'degree-level',
       label: 'Intended Degree Level Mismatch',
       status: 'unmet',
-      details: `This scholarship is strictly for ${scholarship.degreeLevels.join(', ')} degree programs. You selected ${profile.degreeLevel}.`,
+      details: `This scholarship is designated strictly for ${scholarship.degreeLevels.join(', ')} degree programs. You selected ${profile.degreeLevel}.`,
     });
   }
 
-  // Check 3: Destination Country Match
+  // Check 4: Destination Country Match
   const destinationMatches =
     profile.preferredDestination === 'All' ||
     scholarship.hostCountries.includes('Multiple') ||
@@ -76,7 +90,7 @@ export function evaluateEligibility(
       id: 'destination',
       label: 'Host Country Eligibility',
       status: 'met',
-      details: `Your target country (${profile.preferredDestination}) aligns with eligible destination: ${scholarship.hostCountries.join(', ')}.`,
+      details: `Your target destination (${profile.preferredDestination}) aligns with tenure country: ${scholarship.hostCountries.join(', ')}.`,
     });
   } else {
     requirementsNotMet.push({
@@ -87,7 +101,7 @@ export function evaluateEligibility(
     });
   }
 
-  // Check 4: Subject Area
+  // Check 5: Subject Area Match
   const subjectMatches =
     profile.subjectArea === 'All Subjects' ||
     scholarship.subjectAreas.includes('All Subjects') ||
@@ -98,7 +112,7 @@ export function evaluateEligibility(
       id: 'subject',
       label: 'Academic Discipline',
       status: 'met',
-      details: `Your field (${profile.subjectArea}) is supported by this funding scheme.`,
+      details: `Your discipline (${profile.subjectArea}) is supported under this scheme.`,
     });
   } else {
     requirementsNotMet.push({
@@ -109,41 +123,41 @@ export function evaluateEligibility(
     });
   }
 
-  // Check 5: Academic Percentage / Minimum GPA
+  // Check 6: Academic Percentage / Minimum GPA
   if (profile.academicPercentage > 0) {
     if (profile.academicPercentage >= scholarship.minAcademicPercentage) {
       requirementsMet.push({
         id: 'academic-percentage',
-        label: 'Minimum Academic Percentage',
+        label: 'Minimum Academic Benchmark',
         status: 'met',
-        details: `Your academic percentage (${profile.academicPercentage}%) meets or exceeds the published minimum requirement of ${scholarship.minAcademicPercentage}%.`,
+        details: `Your reported graduation metric (${profile.academicPercentage}%) meets the published baseline threshold of ${scholarship.minAcademicPercentage}%. (Note: Selection remains competitive).`,
       });
     } else {
       requirementsNotMet.push({
         id: 'academic-percentage',
         label: 'Academic Percentage Below Minimum',
         status: 'unmet',
-        details: `Your reported academic percentage is ${profile.academicPercentage}%, which is below the published competitive threshold of ${scholarship.minAcademicPercentage}%.`,
+        details: `Your reported graduation metric (${profile.academicPercentage}%) is below the published minimum of ${scholarship.minAcademicPercentage}%.`,
       });
     }
   } else {
     informationNeeded.push({
       id: 'academic-percentage',
-      label: 'Academic Percentage / CGPA',
+      label: 'Academic Percentage / CGPA Missing',
       status: 'needed',
-      details: `Enter your graduation percentage or converted CGPA (Requires minimum ${scholarship.minAcademicPercentage}%).`,
+      details: `Enter your graduation percentage or converted CGPA (Baseline requirement is minimum ${scholarship.minAcademicPercentage}%).`,
     });
   }
 
-  // Check 6: English Language / IELTS
+  // Check 7: English Language / IELTS
   if (scholarship.minIeltsScore > 0) {
     if (profile.ieltsScore > 0) {
       if (profile.ieltsScore >= scholarship.minIeltsScore) {
         requirementsMet.push({
           id: 'ielts',
-          label: 'IELTS English Language Test',
+          label: 'English Language Benchmark',
           status: 'met',
-          details: `Your IELTS score of ${profile.ieltsScore} meets the minimum published band of ${scholarship.minIeltsScore}.`,
+          details: `Your IELTS score of ${profile.ieltsScore} satisfies the published baseline band of ${scholarship.minIeltsScore}.`,
         });
       } else {
         requirementsNotMet.push({
@@ -156,21 +170,21 @@ export function evaluateEligibility(
     } else {
       informationNeeded.push({
         id: 'ielts',
-        label: 'IELTS Academic Score Needed',
+        label: 'Language Score Information Needed',
         status: 'needed',
-        details: `Official score of at least ${scholarship.minIeltsScore} is required for this award. Provide your test result or verify if TOEFL/PTE is accepted.`,
+        details: `Official score of at least ${scholarship.minIeltsScore} is required for this award. Enter your score or check if equivalent test (TOEFL/PTE) is accepted.`,
       });
     }
   } else {
     requirementsMet.push({
       id: 'ielts',
-      label: 'Language Requirement',
+      label: 'Language Benchmark',
       status: 'met',
-      details: 'No rigid IELTS minimum specified by scholarship provider (may use GRE, institutional language prep, or direct university evaluation).',
+      details: 'No rigid scholarship-level IELTS cutoff specified (uses GRE, institutional preparatory language course, or target university criteria).',
     });
   }
 
-  // Check 7: Work Experience
+  // Check 8: Work Experience
   if (scholarship.requiresWorkExperience) {
     const requiredYears = scholarship.workExperienceYearsNeeded || 2;
     if (profile.workExperienceYears >= requiredYears) {
@@ -178,7 +192,7 @@ export function evaluateEligibility(
         id: 'work-experience',
         label: 'Professional Work Experience',
         status: 'met',
-        details: `You have ${profile.workExperienceYears} year(s) of verified experience, meeting the required ${requiredYears} year(s) threshold.`,
+        details: `You have ${profile.workExperienceYears} year(s) of verified experience, meeting the required baseline of ${requiredYears} year(s) (approx. 2,800 hours).`,
       });
     } else {
       requirementsNotMet.push({
@@ -190,14 +204,18 @@ export function evaluateEligibility(
     }
   }
 
-  // Check 8: Country Citizenship
-  if (scholarship.id === 'fulbright-pakistan' || scholarship.id === 'chevening-uk' || scholarship.id === 'australia-awards') {
+  // Check 9: Country Citizenship / Nationality
+  if (
+    scholarship.id === 'fulbright-pakistan' ||
+    scholarship.id === 'chevening-uk' ||
+    scholarship.id === 'australia-awards'
+  ) {
     if (profile.isPakistaniCitizen) {
       requirementsMet.push({
         id: 'citizenship',
         label: 'Nationality & Residence',
         status: 'met',
-        details: 'Confirmed Pakistani citizenship residing in Pakistan satisfies eligibility boundary.',
+        details: 'Confirmed Pakistani citizenship and residency fulfills eligibility criteria.',
       });
     } else {
       requirementsNotMet.push({
@@ -209,8 +227,9 @@ export function evaluateEligibility(
     }
   }
 
-  // Overall status
-  let overallStatus: 'Likely Eligible' | 'Partially Eligible' | 'Not Eligible' = 'Likely Eligible';
+  // Overall Status determination:
+  // Strictly distinguishes baseline eligibility from guaranteed admission/selection
+  let overallStatus: MatcherOverallStatus = 'Baseline Criteria Met';
   if (requirementsNotMet.length > 0) {
     overallStatus = 'Not Eligible';
   } else if (informationNeeded.length > 0) {

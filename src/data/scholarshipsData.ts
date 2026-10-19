@@ -21,14 +21,16 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
       'Social Sciences & Humanities',
     ],
     fundingType: 'Full Funding',
-    minAcademicPercentage: 70, // Equivalent to minimum 16 years of education with 3.0+ CGPA or First Division
-    minIeltsScore: 0, // Uses GRE General Test rather than IELTS initially
+    minAcademicPercentage: 70, // Minimum 16 years of education with 3.0+ CGPA or First Division
+    minIeltsScore: 0, // Uses GRE General Test for initial Pakistani screening; TOEFL is required after selection for university placement
     requiresWorkExperience: false,
     workExperienceYearsNeeded: 0,
-    applicationDeadlineNotice: 'Typically late April to early May each annual cycle. (Annual cycle: Check USEFP announcement for exact opening/closing).',
+    applicationDeadlineNotice: 'Typically late April to early May each annual cycle (check official USEFP announcement for exact opening/closing dates).',
     officialUrl: 'https://usefp.org/scholarships/fulbright-degree.cfm',
-    lastVerifiedDate: 'Verified 2024-2025 intake cycle',
+    lastVerifiedDate: 'October 19, 2026',
     isVerified: true,
+    programStatus: 'Active',
+    statusDetails: 'Active annual cycle verified via USEFP and US Department of State official portal.',
     benefitsSummary: '100% tuition, monthly living stipend, health insurance, airfare, visa fee assistance, and book allowance.',
     eligibilityRequirements: [
       'Pakistani citizenship residing and working in Pakistan (dual US/Pakistani citizens not eligible).',
@@ -55,19 +57,21 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
     ],
     fundingType: 'Full Funding',
     minAcademicPercentage: 70, // UK upper second-class (2:1) equivalent (approx 65-70% or 3.0+ CGPA in Pakistan)
-    minIeltsScore: 6.5,
+    minIeltsScore: 6.5, // University unconditional offer requirement (Chevening removed central language test in 2020)
     requiresWorkExperience: true,
     workExperienceYearsNeeded: 2, // Exactly 2,800 hours / approx 2 years
-    applicationDeadlineNotice: 'Opens annually in August; closes in early November.',
+    applicationDeadlineNotice: 'Opens annually in August; closes in early November (check official Chevening portal for exact dates).',
     officialUrl: 'https://www.chevening.org/scholarship/pakistan/',
-    lastVerifiedDate: 'Verified 2024-2025 intake cycle',
+    lastVerifiedDate: 'October 19, 2026',
     isVerified: true,
+    programStatus: 'Active',
+    statusDetails: 'Active annual cycle verified via UK FCDO Chevening Pakistan portal.',
     benefitsSummary: 'Full university tuition fees, monthly living allowance, economy return flight to the UK, and arrival allowances.',
     eligibilityRequirements: [
-      'Citizen of Pakistan with intention to return for minimum 2 years after your award has ended.',
+      'Citizen of Pakistan with commitment to return for minimum 2 years after your award has ended.',
       'Undergraduate degree equivalent to an upper second-class 2:1 honours degree in the UK.',
       'At least two years (equivalent to 2,800 hours) of verified work experience (full-time, part-time, or internships).',
-      'Apply to 3 eligible UK university master’s programs and receive an unconditional offer from one.',
+      'Apply to 3 eligible UK university master’s programs and receive an unconditional offer from at least one before the deadline.',
     ],
     notesForPakistaniStudents: 'Work experience hours must be carefully calculated and documented. Leadership potential is a central evaluation pillar.',
   },
@@ -89,23 +93,25 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
     minIeltsScore: 6.0,
     requiresWorkExperience: false,
     workExperienceYearsNeeded: 0,
-    applicationDeadlineNotice: 'Embassy Track: February-March; University Track: March-April annually.',
+    applicationDeadlineNotice: 'Embassy Track: typically Feb–March; University Track: typically Feb–April (check official Study in Korea GKS notice for exact schedule).',
     officialUrl: 'https://www.studyinkorea.go.kr/en/scholarship/Gks1NoticeList.do',
-    lastVerifiedDate: 'Verified 2024-2025 intake cycle',
+    lastVerifiedDate: 'October 19, 2026',
     isVerified: true,
+    programStatus: 'Active',
+    statusDetails: 'Active annual cycle verified via NIIED Study in Korea official scholarship repository.',
     benefitsSummary: '100% full tuition, 1,000,000 KRW monthly stipend, round-trip airfare, 1-year Korean language training, resettlement allowance, and health insurance.',
     eligibilityRequirements: [
       'Pakistani citizenship (applicant and parents must hold non-Korean citizenship).',
       'Cumulative Grade Point Average (CGPA) above 80% on a 100-point scale or rank within the top 20% of previous graduating class.',
       'Under 40 years of age as of date of selection.',
-      'Must complete 1 year of Korean language program at designated language institution in Korea before degree study.',
+      'Must complete 1 year of Korean language program at designated language institution in Korea before degree study (exempt if TOPIK level 5 or 6).',
     ],
     notesForPakistaniStudents: 'Special quota allocated specifically for Pakistan under both Embassy Track and University Track (R&D focus encourages STEM & AI applicants).',
   },
   {
     id: 'daad-epos-germany',
     name: 'DAAD EPOS (Development-Related Postgraduate Courses)',
-    provider: 'German Academic Exchange Service (Deutscher Akademischer Austauschdienst)',
+    provider: 'German Academic Exchange Service (Deutscher Akademischer Austauschdienst - DAAD)',
     hostCountries: ['Germany'],
     degreeLevels: ['Master'],
     subjectAreas: [
@@ -121,14 +127,16 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
     minIeltsScore: 6.0,
     requiresWorkExperience: true,
     workExperienceYearsNeeded: 2, // At least 2 years of relevant professional experience
-    applicationDeadlineNotice: 'Deadlines vary by designated master program (between August and November for next year start).',
+    applicationDeadlineNotice: 'Deadlines vary by designated master course (typically between August and November of preceding year; check official DAAD EPOS course brochure).',
     officialUrl: 'https://www.daad.de/en/study-and-research-in-germany/scholarships/daad-scholarships/',
-    lastVerifiedDate: 'Verified 2024-2025 intake cycle',
+    lastVerifiedDate: 'October 19, 2026',
     isVerified: true,
-    benefitsSummary: 'Monthly scholarship payment of €934, health and accident insurance payments, travel allowance, and study allowance.',
+    programStatus: 'Active',
+    statusDetails: 'Active course cycle verified via DAAD Germany official scholarship database.',
+    benefitsSummary: 'Monthly scholarship payment of €934 for Master’s candidates, health and accident insurance payments, travel allowance, and study allowance.',
     eligibilityRequirements: [
       'Hold a recognized 4-year Bachelor’s degree (completed no more than 6 years prior).',
-      'At least 2 years of professional work experience in a relevant field after completing bachelor’s.',
+      'At least 2 years of professional work experience in a relevant development field after completing bachelor’s.',
       'English proficiency: IELTS min 6.0 to 6.5 (or TOEFL) depending on specific course guidelines.',
       'Motivation letter demonstrating personal and professional link to development-related issues.',
     ],
@@ -137,7 +145,7 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
   {
     id: 'commonwealth-masters-uk',
     name: 'Commonwealth Master’s Scholarships',
-    provider: 'Commonwealth Scholarship Commission in the UK (CSC) & FCDO',
+    provider: 'Commonwealth Scholarship Commission in the UK (CSC) & UK FCDO',
     hostCountries: ['United Kingdom'],
     degreeLevels: ['Master'],
     subjectAreas: [
@@ -153,13 +161,15 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
     minIeltsScore: 6.5,
     requiresWorkExperience: false,
     workExperienceYearsNeeded: 0,
-    applicationDeadlineNotice: 'Typically opens in September and closes in October-November annually.',
+    applicationDeadlineNotice: 'Typically opens in September and closes in October–November annually (check CSC UK and HEC Pakistan official announcements for exact deadline).',
     officialUrl: 'https://cscuk.fcdo.gov.uk/scholarships/commonwealth-masters-scholarships/',
-    lastVerifiedDate: 'Verified 2024-2025 intake cycle',
+    lastVerifiedDate: 'October 19, 2026',
     isVerified: true,
+    programStatus: 'Active',
+    statusDetails: 'Active annual cycle verified via UK Commonwealth Scholarship Commission official portal.',
     benefitsSummary: 'Approved tuition fees, return airfare to UK, monthly stipend (£1,347/mo or £1,652/mo for London), warm clothing allowance, and thesis grant.',
     eligibilityRequirements: [
-      'Citizen of or granted refugee status by a Commonwealth country (Pakistan is an active Commonwealth nation).',
+      'Citizen of or granted refugee status by a Commonwealth country (Pakistan is an eligible Commonwealth nation).',
       'Hold a first degree of at least upper second-class (2:1) honours standard (approx 70% or 3.0+ CGPA in Pakistan).',
       'Be unable to afford to study in the UK without this scholarship.',
       'Nominated through an official nominating agency (e.g. Higher Education Commission - HEC Pakistan).',
@@ -185,18 +195,20 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
     minIeltsScore: 6.5, // Min overall 6.5 with no band less than 6.0
     requiresWorkExperience: true,
     workExperienceYearsNeeded: 2,
-    applicationDeadlineNotice: 'Opens annually in February; closes in April/May.',
+    applicationDeadlineNotice: 'Opens annually February 1; closes April 30 (check official DFAT Australia Awards Pakistan country page for exact cycle updates).',
     officialUrl: 'https://www.dfat.gov.au/people-to-people/australia-awards/australia-awards-scholarships',
-    lastVerifiedDate: 'Verified 2024-2025 intake cycle',
+    lastVerifiedDate: 'October 19, 2026',
     isVerified: true,
+    programStatus: 'Active',
+    statusDetails: 'Active cycle verified via Australian DFAT Australia Awards portal.',
     benefitsSummary: 'Full tuition fees, return air travel, establishment allowance, Contribution to Living Expenses (CLE), Overseas Student Health Cover (OSHC).',
     eligibilityRequirements: [
-      'Citizen of Pakistan and currently residing in Pakistan.',
+      'Citizen of Pakistan and currently residing in Pakistan at time of application.',
       'Minimum of two years’ work experience in a field related to your proposed study.',
       'IELTS Academic overall score of at least 6.5 with no band less than 6.0.',
       'Commitment to return to Pakistan for at least two years after completing study in Australia.',
     ],
-    notesForPakistaniStudents: 'Priority areas for Pakistan include economic growth, water security, health, and education development.',
+    notesForPakistaniStudents: 'Priority areas for Pakistan include economic growth, water security, health, education, and climate resilience.',
   },
   {
     id: 'kaist-scholarship-korea',
@@ -214,10 +226,12 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
     minIeltsScore: 6.5,
     requiresWorkExperience: false,
     workExperienceYearsNeeded: 0,
-    applicationDeadlineNotice: 'Spring intake: August-September; Fall intake: December-January.',
+    applicationDeadlineNotice: 'Spring intake: August–September; Fall intake: December–January (check official KAIST admissions schedule for specific dates).',
     officialUrl: 'https://admission.kaist.ac.kr/graduate/intl/scholarships',
-    lastVerifiedDate: 'Verified 2024-2025 intake cycle',
+    lastVerifiedDate: 'October 19, 2026',
     isVerified: true,
+    programStatus: 'Active',
+    statusDetails: 'Active graduate scholarship verified via official KAIST International Admissions office.',
     benefitsSummary: '100% full tuition waiver, monthly stipend of 350,000 KRW for Master (plus lab research project subsidies usually totaling 800,000-1,200,000 KRW/month), and medical insurance.',
     eligibilityRequirements: [
       'Hold Bachelor’s degree in science or engineering from an accredited institution.',
@@ -230,7 +244,7 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
     id: 'turkiye-burslari',
     name: 'Türkiye Bursları Government Scholarships',
     provider: 'Presidency for Turks Abroad and Related Communities (YTB), Republic of Türkiye',
-    hostCountries: ['Turkey'], // Great bridge destination for Pakistani scholars
+    hostCountries: ['Turkey'],
     degreeLevels: ['Bachelor', 'Master', 'PhD'],
     subjectAreas: [
       'All Subjects',
@@ -245,10 +259,12 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
     minIeltsScore: 0, // Most courses taught in Turkish (includes 1 yr free language prep)
     requiresWorkExperience: false,
     workExperienceYearsNeeded: 0,
-    applicationDeadlineNotice: 'Applications open January 10 and close February 20 annually.',
+    applicationDeadlineNotice: 'Applications open January 10 and close February 20 annually (check official Türkiye Bursları announcement for exact dates).',
     officialUrl: 'https://www.turkiyeburslari.gov.tr',
-    lastVerifiedDate: 'Verified 2024-2025 intake cycle',
+    lastVerifiedDate: 'October 19, 2026',
     isVerified: true,
+    programStatus: 'Active',
+    statusDetails: 'Active annual cycle verified via Republic of Türkiye YTB official portal.',
     benefitsSummary: '100% university placement and tuition fees, monthly stipend, university dormitory accommodation, round-trip flight ticket, health insurance, and 1-year Turkish language course.',
     eligibilityRequirements: [
       'Citizens of all countries except citizens of Turkey.',
@@ -275,10 +291,12 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
     minIeltsScore: 6.5,
     requiresWorkExperience: false,
     workExperienceYearsNeeded: 0,
-    applicationDeadlineNotice: 'Between October and January depending on individual joint master consortium.',
+    applicationDeadlineNotice: 'Between October and January/February depending on individual joint master consortium (check official Erasmus Mundus catalogue).',
     officialUrl: 'https://www.eacea.ec.europa.eu/scholarships/erasmus-mundus-catalogue_en',
-    lastVerifiedDate: 'Verified 2024-2025 intake cycle',
+    lastVerifiedDate: 'October 19, 2026',
     isVerified: true,
+    programStatus: 'Active',
+    statusDetails: 'Active multi-country consortium funding verified via European Commission EACEA portal.',
     benefitsSummary: 'Full tuition fee coverage across multiple European partner universities, €1,400 monthly living stipend for 24 months, comprehensive health insurance, and travel allowance.',
     eligibilityRequirements: [
       'Bachelor’s degree or equivalent in a relevant field.',
@@ -289,7 +307,7 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
   },
   {
     id: 'vanier-cgs-canada',
-    name: 'Vanier Canada Graduate Scholarships (Vanier CGS)',
+    name: 'Vanier Canada Graduate Scholarships (Vanier CGS) [Discontinued / Replaced]',
     provider: 'Government of Canada (CIHR, NSERC, SSHRC)',
     hostCountries: ['Canada'],
     degreeLevels: ['PhD'],
@@ -300,26 +318,31 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
       'Social Sciences & Humanities',
     ],
     fundingType: 'Full Funding',
-    minAcademicPercentage: 85, // First-class average across past two years of study
+    minAcademicPercentage: 85,
     minIeltsScore: 7.0,
     requiresWorkExperience: false,
     workExperienceYearsNeeded: 0,
-    applicationDeadlineNotice: 'Institutional deadlines usually late September to mid October.',
+    applicationDeadlineNotice: 'Program discontinued — Final competition concluded in Fall 2024. No longer accepting new applications.',
     officialUrl: 'https://vanier.gc.ca/en/home-accueil.html',
-    lastVerifiedDate: 'Verified 2024-2025 intake cycle',
+    lastVerifiedDate: 'October 19, 2026',
     isVerified: true,
-    benefitsSummary: '$50,000 CAD per year for up to three years of doctoral research.',
+    programStatus: 'Discontinued',
+    statusDetails: 'Discontinued / Phased Out. As confirmed by the official Government of Canada Tri-Agency portal, Vanier CGS is no longer accepting applications. It is succeeded by the Canada Graduate Research Scholarship – Doctoral (CGRS-D).',
+    replacementProgramName: 'Canada Graduate Research Scholarship – Doctoral (CGRS-D)',
+    replacementProgramSummary: 'The Government of Canada has harmonized doctoral funding under CIHR, NSERC, and SSHRC into the new Canada Graduate Research Scholarship – Doctoral (CGRS-D), providing CAD $40,000 per year for up to 36 months. Up to 15% of awards are available to international doctoral candidates. Applications are submitted directly to the granting agencies or through Canadian institutions.',
+    replacementProgramUrl: 'https://vanier.gc.ca/en/home-accueil.html',
+    benefitsSummary: 'Former benefit was $50,000 CAD/year for 3 years. The program is now closed to new applicants; existing award holders remain funded under original terms.',
     eligibilityRequirements: [
-      'Be nominated by only one Canadian institution that has a Vanier CGS quota.',
-      'First-class average in each of the last two years of full-time study or equivalent.',
-      'Demonstrate exceptional leadership skills and scholarly potential.',
+      'This program is officially closed to new applicants.',
+      'Doctoral candidates seeking Canadian federal funding should consult the new Canada Graduate Research Scholarship – Doctoral (CGRS-D).',
+      'Current Vanier CGS award holders continue under their existing terms.',
     ],
-    notesForPakistaniStudents: 'Candidates cannot apply directly; must be nominated by their chosen Canadian university department.',
+    notesForPakistaniStudents: 'Do not submit new applications for Vanier CGS. Refer to the replacement CGRS-D guidelines on the official Government of Canada Tri-Agency portal.',
   },
   {
     id: 'placeholder-unverified-sample',
-    name: 'Pending Verification: Regional Bilateral Merit Grant',
-    provider: 'Provincial Department of Higher Education [Pending Verification]',
+    name: 'Regional Bilateral Merit Grant (Unverified Placeholder)',
+    provider: 'Provincial Department of Higher Education [Pending Primary Source Verification]',
     hostCountries: ['Australia'],
     degreeLevels: ['Master'],
     subjectAreas: ['All Subjects'],
@@ -328,15 +351,30 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
     minIeltsScore: 6.5,
     requiresWorkExperience: false,
     workExperienceYearsNeeded: 0,
-    applicationDeadlineNotice: 'Pending official verification from provider.',
+    applicationDeadlineNotice: 'Check official announcement — Details unconfirmed.',
     officialUrl: '#',
-    lastVerifiedDate: 'Unverified - Verification in Progress',
+    lastVerifiedDate: 'Not yet verified',
     isVerified: false,
-    benefitsSummary: 'Data for this scholarship has not yet been verified from primary official government or university bulletins. Displayed as an unverified placeholder per policy.',
+    programStatus: 'Not Yet Verified',
+    statusDetails: 'Not yet verified from primary official government or university bulletins. Displayed solely in the separate unverified section for editorial audit compliance.',
+    benefitsSummary: 'Data for this scholarship has not yet been verified from primary official sources. Displayed as an unverified placeholder per policy; do not rely on these figures for budget calculations.',
     eligibilityRequirements: [
       'Criteria currently pending official confirmation.',
       'Do not rely on this record for financial planning until official verification is published.',
     ],
-    notesForPakistaniStudents: 'Per our transparency policy, this placeholder demonstrates how unverified schemes are segregated from confirmed opportunities.',
+    notesForPakistaniStudents: 'Per our transparency policy, this placeholder is segregated from confirmed opportunities and not included in active verified totals.',
   },
 ];
+
+// Helper subsets to guarantee active verified opportunities are strictly segregated
+export const ACTIVE_VERIFIED_SCHOLARSHIPS: Scholarship[] = SCHOLARSHIPS_DATA.filter(
+  (s) => s.isVerified && s.programStatus === 'Active'
+);
+
+export const DISCONTINUED_SCHOLARSHIPS: Scholarship[] = SCHOLARSHIPS_DATA.filter(
+  (s) => s.programStatus === 'Discontinued'
+);
+
+export const UNVERIFIED_SCHOLARSHIPS: Scholarship[] = SCHOLARSHIPS_DATA.filter(
+  (s) => !s.isVerified || s.programStatus === 'Not Yet Verified'
+);

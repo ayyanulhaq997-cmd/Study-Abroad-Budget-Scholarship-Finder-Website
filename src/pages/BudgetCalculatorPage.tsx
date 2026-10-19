@@ -162,8 +162,20 @@ export const BudgetCalculatorPage: React.FC = () => {
       isExchangeRateUserProvided: false,
       annualTuition: country.typicalTuitionMin,
       annualLiving: country.statutoryAnnualLivingProof || country.typicalLivingMin,
-      annualInsurance: country.currencyCode === 'EUR' ? 1440 : country.currencyCode === 'GBP' ? 776 : 1500,
-      annualSemesterFees: country.currencyCode === 'EUR' ? 600 : 500,
+      annualInsurance:
+        country.currencyCode === 'EUR'
+          ? 1440
+          : country.currencyCode === 'GBP'
+          ? 776
+          : country.currencyCode === 'KRW'
+          ? 800000
+          : 1500,
+      annualSemesterFees:
+        country.currencyCode === 'EUR'
+          ? 600
+          : country.currencyCode === 'KRW'
+          ? 400000
+          : 500,
     }));
   };
 
@@ -228,10 +240,10 @@ export const BudgetCalculatorPage: React.FC = () => {
     input.expenseCurrency === activeCountry.currencyCode &&
     input.annualLiving < activeCountry.statutoryAnnualLivingProof;
 
-  // Filter verified scholarships strictly matching the active destination country
+  // Filter active verified scholarships strictly matching the active destination country
   const matchingVerifiedScholarships = useMemo(() => {
     return SCHOLARSHIPS_DATA.filter((s) => {
-      if (!s.isVerified) return false;
+      if (!s.isVerified || s.programStatus === 'Discontinued') return false;
       const matchesCountry =
         s.hostCountries.includes('Multiple') ||
         s.hostCountries.includes('Multiple European Countries') ||
@@ -329,8 +341,8 @@ export const BudgetCalculatorPage: React.FC = () => {
             { id: 'germany-master', label: '🇩🇪 Germany Public Uni (Blocked Account)', desc: '0 Tuition, €11,904 Living' },
             { id: 'usa-stem-master', label: '🇺🇸 USA State University (MS STEM)', desc: '$26k Tuition, $15.5k Living' },
             { id: 'uk-one-year-msc', label: '🇬🇧 UK 1-Year Master’s', desc: '£19.5k Tuition, 12 Mo Living' },
-            { id: 'canada-master', label: '🇨🇦 Canada University', desc: 'CA$21k Tuition, CA$20.6k Living' },
-            { id: 'korea-stem-master', label: '🇰🇷 South Korea STEM / GKS', desc: '$6.5k Tuition, $8k Living' },
+            { id: 'canada-master', label: '🇨🇦 Canada University', desc: 'CA$21k Tuition, CA$23.4k Living' },
+            { id: 'korea-stem-master', label: '🇰🇷 South Korea STEM / GKS', desc: '₩5.4M Tuition, ₩21.5M Living' },
           ].map((preset) => (
             <button
               key={preset.id}

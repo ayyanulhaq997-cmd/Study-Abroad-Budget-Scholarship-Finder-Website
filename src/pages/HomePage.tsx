@@ -81,22 +81,30 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
               {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 pt-2">
-                <button
-                  onClick={() => onNavigate('/budget-calculator')}
-                  className="inline-flex items-center justify-center space-x-2.5 bg-blue-700 hover:bg-blue-800 active:bg-blue-900 text-white font-semibold text-base px-6 py-3.5 rounded-xl shadow-md shadow-blue-700/25 transition-all cursor-pointer"
+                <a
+                  href="/budget-calculator"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onNavigate('/budget-calculator');
+                  }}
+                  className="inline-flex items-center justify-center space-x-2.5 bg-blue-700 hover:bg-blue-800 active:bg-blue-900 text-white font-semibold text-base px-6 py-3.5 min-h-[48px] rounded-xl shadow-md shadow-blue-700/25 transition-all cursor-pointer"
                 >
                   <Calculator className="w-5 h-5" />
                   <span>Calculate My Study Budget</span>
                   <ArrowRight className="w-4 h-4 ml-1" />
-                </button>
+                </a>
 
-                <button
-                  onClick={() => onNavigate('/scholarships')}
-                  className="inline-flex items-center justify-center space-x-2 bg-white hover:bg-slate-100 active:bg-slate-200 text-slate-800 font-semibold text-base px-6 py-3.5 rounded-xl border border-slate-300 shadow-2xs transition-all cursor-pointer"
+                <a
+                  href="/scholarships"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onNavigate('/scholarships');
+                  }}
+                  className="inline-flex items-center justify-center space-x-2 bg-white hover:bg-slate-100 active:bg-slate-200 text-slate-800 font-semibold text-base px-6 py-3.5 min-h-[48px] rounded-xl border border-slate-300 shadow-2xs transition-all cursor-pointer"
                 >
                   <Award className="w-5 h-5 text-amber-500" />
                   <span>Explore Scholarships</span>
-                </button>
+                </a>
               </div>
 
               {/* Key Trust Signals */}
@@ -135,10 +143,14 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                   {COUNTRIES_DATA.slice(0, 4).map((c) => {
                     const sampleFirstYearPKR = (c.typicalTuitionMin + c.statutoryAnnualLivingProof) * c.defaultExchangeRateToPKR + 450000;
                     return (
-                      <div
+                      <a
                         key={c.id}
-                        onClick={() => onNavigate('/countries')}
-                        className="p-3 rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/40 transition-all cursor-pointer flex items-center justify-between group"
+                        href="/countries"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          onNavigate('/countries');
+                        }}
+                        className="p-3.5 min-h-[52px] rounded-xl border border-slate-100 hover:border-blue-200 hover:bg-blue-50/40 transition-all cursor-pointer flex items-center justify-between group"
                       >
                         <div className="flex items-center space-x-3">
                           <span className="text-2xl" aria-hidden="true">{c.flag}</span>
@@ -157,19 +169,23 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                           </span>
                           <span className="text-xs text-slate-500 font-medium">Est. 1st-Yr Total</span>
                         </div>
-                      </div>
+                      </a>
                     );
                   })}
                 </div>
 
                 <div className="mt-5 pt-4 border-t border-slate-100">
-                  <button
-                    onClick={() => onNavigate('/countries')}
-                    className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
+                  <a
+                    href="/countries"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onNavigate('/countries');
+                    }}
+                    className="w-full py-3 min-h-[48px] px-4 rounded-xl text-xs sm:text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center justify-center space-x-1.5 cursor-pointer"
                   >
                     <span>Compare All 6 Destinations Side-by-Side</span>
                     <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>
@@ -190,8 +206,12 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Card 1: Budget Calculator */}
-          <div
-            onClick={() => onNavigate('/budget-calculator')}
+          <a
+            href="/budget-calculator"
+            onClick={(e) => {
+              e.preventDefault();
+              onNavigate('/budget-calculator');
+            }}
             className="group p-6 rounded-2xl bg-white border border-slate-200 hover:border-blue-500/50 hover:shadow-lg transition-all cursor-pointer flex flex-col justify-between"
           >
             <div>
@@ -205,15 +225,19 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 Separate pre-departure setup costs from recurring tuition, test your custom exchange rate, and measure funding gaps.
               </p>
             </div>
-            <div className="mt-5 pt-3 border-t border-slate-100 flex items-center text-xs font-semibold text-blue-700">
+            <div className="mt-5 pt-3 border-t border-slate-100 flex items-center text-xs font-semibold text-blue-700 min-h-[36px]">
               <span>Open Calculator</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>
-          </div>
+          </a>
 
           {/* Card 2: Country Comparison */}
-          <div
-            onClick={() => onNavigate('/countries')}
+          <a
+            href="/countries"
+            onClick={(e) => {
+              e.preventDefault();
+              onNavigate('/countries');
+            }}
             className="group p-6 rounded-2xl bg-white border border-slate-200 hover:border-blue-500/50 hover:shadow-lg transition-all cursor-pointer flex flex-col justify-between"
           >
             <div>
@@ -227,15 +251,19 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 Compare Germany, South Korea, USA, Canada, UK, and Australia by statutory living proof, work rights, and PSW visas.
               </p>
             </div>
-            <div className="mt-5 pt-3 border-t border-slate-100 flex items-center text-xs font-semibold text-emerald-700">
+            <div className="mt-5 pt-3 border-t border-slate-100 flex items-center text-xs font-semibold text-emerald-700 min-h-[36px]">
               <span>Compare Destinations</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>
-          </div>
+          </a>
 
           {/* Card 3: Scholarship Finder */}
-          <div
-            onClick={() => onNavigate('/scholarships')}
+          <a
+            href="/scholarships"
+            onClick={(e) => {
+              e.preventDefault();
+              onNavigate('/scholarships');
+            }}
             className="group p-6 rounded-2xl bg-white border border-slate-200 hover:border-blue-500/50 hover:shadow-lg transition-all cursor-pointer flex flex-col justify-between"
           >
             <div>
@@ -249,15 +277,19 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 Filter strictly verified scholarships by degree level, subject (including CS & AI), funding type, and authentic official portals.
               </p>
             </div>
-            <div className="mt-5 pt-3 border-t border-slate-100 flex items-center text-xs font-semibold text-amber-700">
+            <div className="mt-5 pt-3 border-t border-slate-100 flex items-center text-xs font-semibold text-amber-700 min-h-[36px]">
               <span>Find Verified Grants</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>
-          </div>
+          </a>
 
           {/* Card 4: University Comparison */}
-          <div
-            onClick={() => onNavigate('/universities')}
+          <a
+            href="/universities"
+            onClick={(e) => {
+              e.preventDefault();
+              onNavigate('/universities');
+            }}
             className="group p-6 rounded-2xl bg-white border border-slate-200 hover:border-blue-500/50 hover:shadow-lg transition-all cursor-pointer flex flex-col justify-between"
           >
             <div>
@@ -271,11 +303,11 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                 Benchmark verified international tuition fees, city living costs, and official direct application portals across top institutions.
               </p>
             </div>
-            <div className="mt-5 pt-3 border-t border-slate-100 flex items-center text-xs font-semibold text-indigo-700">
+            <div className="mt-5 pt-3 border-t border-slate-100 flex items-center text-xs font-semibold text-indigo-700 min-h-[36px]">
               <span>Explore Universities</span>
               <ArrowRight className="w-3.5 h-3.5 ml-1 group-hover:translate-x-1 transition-transform" />
             </div>
-          </div>
+          </a>
         </div>
       </section>
 

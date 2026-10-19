@@ -234,6 +234,8 @@ function runTests() {
       popularSubjects: ['CS'],
       officialLinks: [],
       notes: '',
+      lastVerifiedDate: 'October 19, 2026',
+      officialSourceUrl: 'https://www.make-it-in-germany.com',
     };
 
     const input: BudgetInput = {

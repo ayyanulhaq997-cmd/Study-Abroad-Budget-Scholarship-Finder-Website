@@ -610,23 +610,23 @@ export function getPresetInput(presetId: string): BudgetInput {
         homeCountry: 'Pakistan',
         homeCurrency: 'PKR',
         destinationCountryId: 'south-korea',
-        destinationCurrency: 'USD',
-        expenseCurrency: 'USD',
-        exchangeRateToPKR: 279.50,
+        destinationCurrency: 'KRW',
+        expenseCurrency: 'KRW',
+        exchangeRateToPKR: 0.208,
         isExchangeRateUserProvided: false,
         studyDurationYears: 2,
-        annualTuition: 6500,
-        annualLiving: 8000,
-        annualInsurance: 650,
-        annualSemesterFees: 500,
-        oneTimeExpenses: 570000,
+        annualTuition: 5400000, // ₩5,400,000 KRW (≈ PKR 1,120,000 / $4,000 USD)
+        annualLiving: 21500000, // ₩21,500,000 KRW (≈ PKR 4,472,000 / $16,000 USD)
+        annualInsurance: 800000,
+        annualSemesterFees: 400000,
+        oneTimeExpenses: 450000,
         oneTimeExpensesCurrency: 'PKR',
         preDepartureCosts: {
           ...DEFAULT_PRE_DEPARTURE_PKR,
-          airfarePKR: 220000,
+          airfarePKR: 200000,
         },
-        availableAnnualBudgetPKR: 1000000,
-        availableOneTimeFundsPKR: 2800000,
+        availableAnnualBudgetPKR: 1500000,
+        availableOneTimeFundsPKR: 4500000,
       };
 
     case 'pkr-audit-benchmark':
