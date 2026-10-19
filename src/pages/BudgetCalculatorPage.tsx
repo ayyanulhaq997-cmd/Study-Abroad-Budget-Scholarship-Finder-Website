@@ -243,7 +243,7 @@ export const BudgetCalculatorPage: React.FC = () => {
   // Filter active verified scholarships strictly matching the active destination country
   const matchingVerifiedScholarships = useMemo(() => {
     return SCHOLARSHIPS_DATA.filter((s) => {
-      if (!s.isVerified || s.programStatus === 'Discontinued') return false;
+      if (!s.isVerified || s.programStatus === 'Discontinued' || s.programStatus === 'Closed') return false;
       const matchesCountry =
         s.hostCountries.includes('Multiple') ||
         s.hostCountries.includes('Multiple European Countries') ||

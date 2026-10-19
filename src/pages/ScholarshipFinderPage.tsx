@@ -29,6 +29,7 @@ import {
 import {
   SCHOLARSHIPS_DATA,
   ACTIVE_VERIFIED_SCHOLARSHIPS,
+  CLOSED_VERIFIED_SCHOLARSHIPS,
   DISCONTINUED_SCHOLARSHIPS,
   UNVERIFIED_SCHOLARSHIPS,
 } from '../data/scholarshipsData';
@@ -140,6 +141,19 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
     filterMinPercentage,
   ]);
 
+  // Closed verified scholarships (e.g. Fulbright 2027 closed April 1, Australia Awards 2027 closed April 30)
+  const filteredClosedScholarships = useMemo(() => {
+    return applyFilters(CLOSED_VERIFIED_SCHOLARSHIPS);
+  }, [
+    searchQuery,
+    filterCountry,
+    filterDegree,
+    filterSubject,
+    filterFundingType,
+    filterMaxIelts,
+    filterMinPercentage,
+  ]);
+
   // Discontinued scholarships (e.g. Vanier CGS replaced by CGRS-D)
   const filteredDiscontinuedScholarships = useMemo(() => {
     return applyFilters(DISCONTINUED_SCHOLARSHIPS);
@@ -166,7 +180,7 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
     filterMinPercentage,
   ]);
 
-  // Evaluated Matcher Results (strictly evaluated against active verified opportunities first)
+  // Evaluated Matcher Results (evaluated against primary official criteria)
   const matchResults = useMemo(() => {
     return matchAllScholarships(matcherProfile);
   }, [matcherProfile]);
@@ -177,13 +191,13 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
       <div className="border-b border-slate-200 pb-6">
         <div className="flex items-center space-x-2 text-xs font-semibold text-blue-700 uppercase tracking-wider">
           <Award className="w-4 h-4" />
-          <span>Verified Higher Education Funding Directory</span>
+          <span>Higher Education Funding & Eligibility Directory</span>
         </div>
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1">
           Scholarship Finder & Eligibility Matcher
         </h1>
         <p className="text-sm text-slate-600 mt-1 max-w-3xl">
-          Search authentic government and university scholarships verified against official primary sources (e.g., USEFP, Chevening, DAAD, NIIED). Unverified records are segregated and clearly labeled.
+          Search authentic government and university scholarships verified against official primary sources (e.g., USEFP, Chevening, DAAD, NIIED). Closed intake cycles, discontinued programs, and unverified placeholders are segregated with clear notices.
         </p>
 
         {/* Editorial Standards Advisory Banner */}
@@ -191,11 +205,11 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
           <div className="flex items-start space-x-2">
             <Info className="w-4 h-4 text-blue-700 shrink-0 mt-0.5" />
             <span>
-              <strong>Editorial Transparency:</strong> We only publish active scholarships verified against primary government or university bulletins. Baseline eligibility indicates initial qualification to apply, not guaranteed admission or scholarship award.
+              <strong>Editorial Transparency & Ongoing Audit:</strong> Program deadlines, degree eligibility, and statutory visa criteria are verified against direct primary government and institutional sources as of October 2026. The website is under ongoing verification and is not marked as fully verified. Baseline eligibility indicates initial qualification to apply, not guaranteed admission or scholarship award.
             </span>
           </div>
-          <span className="inline-flex items-center text-[11px] font-bold px-2.5 py-1 rounded bg-emerald-100 text-emerald-800 shrink-0">
-            Official Sources Grounded
+          <span className="inline-flex items-center text-[11px] font-bold px-2.5 py-1 rounded bg-blue-100 text-blue-800 shrink-0">
+            Primary Sources Grounded (Ongoing Audit)
           </span>
         </div>
       </div>
@@ -211,7 +225,7 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
           }`}
         >
           <Search className="w-4 h-4" />
-          <span>Verified Directory ({filteredActiveScholarships.length} Active)</span>
+          <span>Directory ({filteredActiveScholarships.length} Active, {filteredClosedScholarships.length} Closed 2027)</span>
         </button>
 
         <button
@@ -332,6 +346,11 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
                 <span className="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded font-medium border border-emerald-200">
                   {filteredActiveScholarships.length} Active Verified Opportunities
                 </span>
+                {filteredClosedScholarships.length > 0 && (
+                  <span className="bg-rose-50 text-rose-800 px-2 py-0.5 rounded font-medium border border-rose-200">
+                    {filteredClosedScholarships.length} Closed (2027 Cycle Past Deadline)
+                  </span>
+                )}
                 {filteredUnverifiedScholarships.length > 0 && (
                   <span className="bg-amber-50 text-amber-800 px-2 py-0.5 rounded font-medium border border-amber-200">
                     {filteredUnverifiedScholarships.length} Unverified Segregated
@@ -502,6 +521,131 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
               )}
             </div>
           </div>
+
+          {/* Section 1.5: CLOSED FOR 2027 INTAKE (PAST DEADLINE) */}
+          {filteredClosedScholarships.length > 0 && (
+            <div className="space-y-4 pt-4 border-t border-slate-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center space-x-2">
+                    <Calendar className="w-5 h-5 text-rose-600" />
+                    <span>Closed Opportunities: 2027 Intake Past Deadline ({filteredClosedScholarships.length})</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Official deadlines have closed for the 2027 academic cycle. Next cycle applications open in early 2027.
+                  </p>
+                </div>
+                <span className="text-xs font-bold text-rose-800 bg-rose-50 px-2.5 py-1 rounded border border-rose-200">
+                  Deadlines Passed for 2027 Intake
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {filteredClosedScholarships.map((s) => (
+                  <div
+                    key={s.id}
+                    className="bg-slate-50/70 rounded-2xl border border-slate-300 p-6 shadow-xs flex flex-col justify-between"
+                  >
+                    <div className="space-y-4">
+                      {/* Top Badges */}
+                      <div className="flex items-start justify-between gap-2 flex-wrap">
+                        <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-100 text-rose-900 border border-rose-300">
+                          <XCircle className="w-3.5 h-3.5 text-rose-600" />
+                          <span>CLOSED for 2027 Intake</span>
+                        </span>
+
+                        <span className="text-xs font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-800">
+                          {s.degreeLevels.join(', ')} Only
+                        </span>
+                      </div>
+
+                      <div>
+                        <h3 className="text-lg font-bold text-slate-900 tracking-tight leading-snug">
+                          {s.name}
+                        </h3>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">
+                          Provided by: {s.provider}
+                        </p>
+                      </div>
+
+                      {/* Explicit Scope & Deadline Callout */}
+                      <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-950 space-y-1">
+                        <div className="font-bold flex items-center space-x-1.5 text-rose-900">
+                          <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                          <span>Official Deadline & Scope Notice:</span>
+                        </div>
+                        <p className="leading-relaxed font-medium">
+                          {s.applicationDeadlineNotice}
+                        </p>
+                      </div>
+
+                      {/* Key Metadata Pill Bar */}
+                      <div className="flex flex-wrap gap-1.5 text-xs">
+                        <span className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-700 font-medium flex items-center space-x-1">
+                          <Globe2 className="w-3 h-3 text-slate-400" />
+                          <span>{s.hostCountries.join(', ')}</span>
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-white border border-slate-200 text-slate-700 font-medium flex items-center space-x-1">
+                          <GraduationCap className="w-3 h-3 text-slate-400" />
+                          <span>{s.degreeLevels.join(', ')}</span>
+                        </span>
+                        {s.requiresWorkExperience && (
+                          <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-medium">
+                            Work Experience ({s.workExperienceYearsNeeded || 2} yrs)
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Published Requirements */}
+                      <div>
+                        <span className="text-xs font-bold text-slate-900 uppercase tracking-wider block mb-1.5">
+                          Eligibility Criteria & Degree Constraints:
+                        </span>
+                        <ul className="space-y-1 text-xs text-slate-600">
+                          {s.eligibilityRequirements.map((req, idx) => (
+                            <li key={idx} className="flex items-start space-x-1.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-slate-500 mt-1.5 shrink-0"></span>
+                              <span>{req}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Pakistani Guidance */}
+                      {s.notesForPakistaniStudents && (
+                        <div className="text-xs text-slate-700 bg-white p-2.5 rounded-lg border border-slate-200">
+                          <strong className="text-slate-900">Pakistani Applicant Guidance: </strong>
+                          {s.notesForPakistaniStudents}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="mt-5 pt-4 border-t border-slate-200 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] text-slate-500 gap-1">
+                        <span className="font-semibold text-rose-700">
+                          Status: Closed for 2027 Cycle
+                        </span>
+                        <span className="font-mono text-[10px] text-slate-400">
+                          Last verified: {s.lastVerifiedDate}
+                        </span>
+                      </div>
+
+                      <a
+                        href={s.officialUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-semibold text-xs flex items-center justify-center space-x-1.5 transition-colors shadow-2xs"
+                      >
+                        <span>View official source portal</span>
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Section 2: DISCONTINUED & TRANSITIONED PROGRAMS (e.g. Vanier CGS replaced by CGRS-D) */}
           {filteredDiscontinuedScholarships.length > 0 && (

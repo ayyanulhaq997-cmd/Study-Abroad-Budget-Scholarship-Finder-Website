@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-export type DegreeLevel = 'Bachelor' | 'Master' | 'PhD' | 'Any';
+export type DegreeLevel = 'Bachelor' | 'Master' | 'PhD' | 'Doctoral' | 'Any';
 
 export type FundingType = 'Full Funding' | 'Partial Funding' | 'Tuition Waiver';
 
@@ -52,7 +52,14 @@ export interface Country {
   officialSourceUrl: string;
 }
 
-export type ProgramStatus = 'Active' | 'Discontinued' | 'Awaiting Announcement' | 'Not Yet Verified';
+export type ProgramStatus =
+  | 'Applications Open'
+  | 'Course-Specific Deadlines'
+  | 'Awaiting Announcement'
+  | 'Closed'
+  | 'Discontinued'
+  | 'Not Yet Verified'
+  | 'Active';
 
 export interface Scholarship {
   id: string;
@@ -87,15 +94,20 @@ export interface University {
   city: string;
   currencyCode: string;
   currencySymbol: string;
+  feeAcademicYear: string; // Specific academic year (e.g. '2025/2026 Academic Year')
+  feeProgramScope: string; // Specific program / degree tier (e.g. 'Non-EU Graduate Master\'s / Engineering')
   typicalAnnualTuitionMin: number | null; // null if unknown/variable
   typicalAnnualTuitionMax: number | null;
   tuitionNote: string;
   estimatedCityLivingAnnual: number;
-  knownScholarships: string[];
+  officialFeeScheduleUrl: string; // Direct link to official tuition fee schedule
+  institutionalScholarships: string[]; // Exclusively university-funded / internally administered awards
+  externalFundingOpportunities: string[]; // External / Government-sponsored opportunities (never described as university-funded)
   popularPrograms: string[];
   admissionRequirementsSummary: string;
   officialAdmissionsUrl: string;
   lastVerifiedDate: string;
+  knownScholarships?: string[]; // Backwards compatibility alias
 }
 
 export interface PreDepartureCosts {

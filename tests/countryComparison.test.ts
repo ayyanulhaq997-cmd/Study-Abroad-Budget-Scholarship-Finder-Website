@@ -72,8 +72,10 @@ function runCountryComparisonTests() {
         'South Korea part-time work states S-3 immigration permission and TOPIK dependency'
       );
       assert(
-        kr.postStudyWorkVisa.includes('D-10') && kr.postStudyWorkVisa.includes('points-based'),
-        'South Korea D-10 Job Seeker visa duration and points-based eligibility verified'
+        kr.postStudyWorkVisa.includes('D-10') &&
+          kr.postStudyWorkVisa.includes('domestic Korean universities') &&
+          kr.postStudyWorkVisa.includes('Points-Based System'),
+        'South Korea D-10 visa explains conditional pathways for domestic vs foreign graduates'
       );
       assert(
         Boolean(kr.postStudyOfficialSource && kr.postStudyOfficialSource.includes('HiKorea')),

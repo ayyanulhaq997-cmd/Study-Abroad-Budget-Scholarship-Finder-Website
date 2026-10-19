@@ -41,6 +41,16 @@ export function evaluateEligibility(
         scholarship.statusDetails ||
         'This scholarship program has concluded and no longer accepts new applications.',
     });
+  } else if (scholarship.programStatus === 'Closed') {
+    requirementsNotMet.push({
+      id: 'program-closed',
+      label: 'Application Status: Closed (Past Deadline)',
+      status: 'unmet',
+      details:
+        scholarship.statusDetails ||
+        scholarship.applicationDeadlineNotice ||
+        'The official application deadline for the current cycle has closed.',
+    });
   }
 
   // Check 2: Verification Status

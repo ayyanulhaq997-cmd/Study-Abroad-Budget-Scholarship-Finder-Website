@@ -68,13 +68,18 @@ export const COUNTRIES_DATA: Country[] = [
     visaProcessingWeeks: 'Variable estimates: typically 3 to 6 weeks at the Embassy of the Republic of Korea in Islamabad',
     partTimeWorkRights: 'Part-time work is NOT automatic. It requires formal S-3 Part-time Work Permission from the Korea Immigration Service and university endorsement. Permitted hours depend on degree level, academic standing, and Korean language proficiency (TOPIK): typically 10 to 25 hours per week during term for eligible students, unrestricted during vacations.',
     workRightsOfficialSource: 'Ministry of Justice (Korea Immigration Service) Regulations on Stay and Part-Time Work Permission for International Students (D-2).',
-    postStudyWorkVisa: 'D-10 (Job Seeker Visa): Initial grant of 6 months to 1 year, extendable in 6-month increments up to 2 to 3 years total based on degree level and a points-based evaluation (minimum 60 points out of 190 with 20+ basic points).',
-    postStudyOfficialSource: 'HiKorea (Official Korean Immigration Portal: www.hikorea.go.kr) D-10 Point-Based Job Seeking Visa Guidelines.',
+    postStudyWorkVisa: 'D-10-1 (Job Seeker Visa): Granted conditionally rather than as a universal flat period. Initial grant is 6 months. For international graduates of accredited domestic Korean universities: Master’s and Doctoral degree holders are exempt from the points system and can extend stay in 6-month increments up to 2 years total (and up to 3 years for PhD holders in advanced technology / high-tech fields); Bachelor’s degree holders from Korean institutions are points-exempt with GPA ≥ 3.0 (or TOPIK level 4+) and can extend up to 2 years (or up to 1 year if below 3.0 via points). For graduates of foreign (overseas) universities: must score at least 60 points out of 190 (with ≥ 20 basic points) under the D-10 Points-Based System, with duration capped at up to 1 year, unless holding a degree from a Times Higher Education Top 200 / QS Top 500 university or Fortune 500 employment experience (eligible up to 2 years). Extensions require verifiable documentation of active job search activities.',
+    postStudyOfficialSource: 'Ministry of Justice Enforcement Decree of the Immigration Control Act (Article 10, Attached Table 1-2 D-10 Job Search Qualification), Korea Immigration Service HiKorea Manual on Stay Qualification Management (www.hikorea.go.kr), and NIIED Study in Korea Portal (www.studyinkorea.go.kr).',
     popularSubjects: ['Artificial Intelligence', 'Robotics', 'Electrical Engineering', 'Semiconductors', 'Biotechnology'],
     officialLinks: [
       {
-        title: 'HiKorea (Official Government Immigration Service Portal)',
+        title: 'HiKorea (Official Korean Immigration Service Portal)',
         url: 'https://www.hikorea.go.kr',
+        sourceType: 'Government',
+      },
+      {
+        title: 'HiKorea D-10 Job Search Visa Guidelines (Ministry of Justice)',
+        url: 'https://www.hikorea.go.kr/info/InfoStayD10.pt',
         sourceType: 'Government',
       },
       {
