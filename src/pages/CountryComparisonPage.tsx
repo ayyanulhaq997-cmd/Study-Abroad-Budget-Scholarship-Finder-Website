@@ -33,11 +33,14 @@ interface CountryComparisonPageProps {
 export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
   onNavigate,
 }) => {
-  // Allow multi-selection for side-by-side comparison (default 3 countries)
+  // Allow multi-selection for side-by-side comparison (defaults to all 6 benchmarked destinations)
   const [selectedCountryIds, setSelectedCountryIds] = useState<string[]>([
     'germany',
     'south-korea',
     'uk',
+    'usa',
+    'canada',
+    'australia',
   ]);
 
   // Live editable illustrative exchange rates
@@ -55,10 +58,10 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
         setSelectedCountryIds(selectedCountryIds.filter((c) => c !== id));
       }
     } else {
-      if (selectedCountryIds.length < 4) {
+      if (selectedCountryIds.length < 6) {
         setSelectedCountryIds([...selectedCountryIds, id]);
       } else {
-        alert('You can compare up to 4 countries side-by-side simultaneously.');
+        alert('You can compare up to all 6 countries side-by-side simultaneously.');
       }
     }
   };
@@ -116,9 +119,9 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
       <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-            Select Destinations to Compare (Selected: {selectedCountryIds.length} / 4 max):
+            Select Destinations to Compare (Selected: {selectedCountryIds.length} / {COUNTRIES_DATA.length}):
           </span>
-          <span className="text-xs text-slate-500">Click to toggle countries into the comparison matrix</span>
+          <span className="text-xs text-slate-500">Click chips to toggle destinations in the side-by-side comparison matrix</span>
         </div>
         <div className="flex flex-wrap gap-2.5">
           {COUNTRIES_DATA.map((c) => {
@@ -243,11 +246,13 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 bg-white">
-              {/* Row 1: Typical Annual Tuition Range */}
+              {/* Item 1: Annual Tuition Range (Program-Dependent Estimate) */}
               <tr>
                 <td className="py-3 px-4 font-semibold text-slate-800 bg-slate-50/50">
-                  Annual Tuition Range
-                  <span className="text-[10px] text-slate-500 block font-normal">Original currency</span>
+                  <span>1. Annual Tuition Range</span>
+                  <span className="text-[10px] text-slate-500 block font-normal mt-0.5">
+                    Program-dependent estimate
+                  </span>
                 </td>
                 {selectedCountries.map((c) => {
                   const rate = customRates[c.id] || c.defaultExchangeRateToPKR;
@@ -264,16 +269,28 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
                       <span className="text-[10px] text-slate-400 block font-mono">
                         (At 1 {c.currencyCode} = {rate} PKR)
                       </span>
+                      {c.id === 'germany' && (
+                        <span className="text-[10px] text-blue-800 block mt-1 leading-snug bg-blue-50 p-1.5 rounded">
+                          Simplified public-university estimate. Most public universities charge €0 tuition (€150–€400/sem admin fee). Baden-Württemberg (€3,000/yr) & TUM CIT (€4k–€12k/yr) charge non-EU fees.
+                        </span>
+                      )}
+                      {c.id === 'south-korea' && (
+                        <span className="text-[10px] text-slate-600 block mt-1 leading-snug">
+                          National/public baseline: ~₩5.4M/yr (≈ {formatCurrency(5400000 * rate, 'PKR')}); private/STEM up to ₩12M/yr.
+                        </span>
+                      )}
                     </td>
                   );
                 })}
               </tr>
 
-              {/* Row 2: Actual Estimated Annual Living Expenses */}
+              {/* Item 2: Estimated Annual Living Expenses (What a Student Actually Spends) */}
               <tr>
                 <td className="py-3 px-4 font-semibold text-slate-800 bg-slate-50/50">
-                  Actual Living Expenses
-                  <span className="text-[10px] text-slate-500 block font-normal">Estimated annual range</span>
+                  <span>2. Estimated Annual Living</span>
+                  <span className="text-[10px] text-slate-500 block font-normal mt-0.5">
+                    What a student actually spends
+                  </span>
                 </td>
                 {selectedCountries.map((c) => {
                   const rate = customRates[c.id] || c.defaultExchangeRateToPKR;
@@ -288,30 +305,77 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
                         ≈ {formatCurrency(minLivingPKR, 'PKR')} – {formatCurrency(maxLivingPKR, 'PKR')}
                       </span>
                       <span className="text-[10px] text-slate-500 block mt-0.5">
-                        Varies by city, rent, and lifestyle.
+                        Includes rent, groceries, transit & insurance in {c.name}. Varies by city.
                       </span>
                     </td>
                   );
                 })}
               </tr>
 
-              {/* Row 3: Statutory Proof-of-Funds (Visa Legal Benchmark) */}
-              <tr className="bg-amber-50/20">
-                <td className="py-3.5 px-4 font-bold text-slate-900 bg-amber-50/40">
-                  Statutory Visa Living Proof
+              {/* Item 3: Estimated First-Year Expenses (Degree Out-of-Pocket Budget) */}
+              <tr className="bg-emerald-50/25">
+                <td className="py-3.5 px-4 font-bold text-slate-900 bg-emerald-50/40">
+                  <span className="text-emerald-900 flex items-center space-x-1">
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>3. Est. 1st-Year Expenses</span>
+                  </span>
+                  <span className="text-[10px] text-emerald-800 font-medium block mt-0.5">
+                    Degree Out-of-Pocket Budget
+                  </span>
+                  <span className="text-[9px] text-slate-400 block font-normal">
+                    Excludes visa proof to avoid double-counting
+                  </span>
+                </td>
+                {selectedCountries.map((c) => {
+                  const rate = customRates[c.id] || c.defaultExchangeRateToPKR;
+                  // First-year out-of-pocket expenses: tuition baseline + actual living baseline + pre-departure setup
+                  const tuitionBaseline = c.id === 'south-korea' ? 5400000 : c.typicalTuitionMin;
+                  const livingBaseline = c.typicalLivingMin;
+                  const preDeparture = 450000;
+                  const calculated1stYearExpensesPKR =
+                    (tuitionBaseline + livingBaseline) * rate + preDeparture;
+
+                  return (
+                    <td key={c.id} className="py-3.5 px-4 border-l border-slate-200 space-y-1">
+                      <span className="text-base font-extrabold text-emerald-950 block font-mono">
+                        {formatCurrency(calculated1stYearExpensesPKR, 'PKR')}
+                      </span>
+                      <span className="text-xs font-bold text-emerald-800 block">
+                        {formatPakistaniDenominations(calculated1stYearExpensesPKR)}
+                      </span>
+                      <div className="text-[10px] text-slate-600 space-y-0.5 font-mono pt-0.5">
+                        <div>Tuition: ≈ {formatCurrency(tuitionBaseline * rate, 'PKR')}</div>
+                        <div>Living: ≈ {formatCurrency(livingBaseline * rate, 'PKR')}</div>
+                        <div>Pre-departure: {formatCurrency(preDeparture, 'PKR')}</div>
+                      </div>
+                    </td>
+                  );
+                })}
+              </tr>
+
+              {/* Item 4: Visa Financial Requirement (Minimum Funds to Demonstrate for Visa Purposes) */}
+              <tr className="bg-amber-50/30">
+                <td className="py-3.5 px-4 font-bold text-slate-900 bg-amber-50/50">
+                  <span className="text-amber-950 flex items-center space-x-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+                    <span>4. Visa Financial Requirement</span>
+                  </span>
                   <span className="text-[10px] text-amber-800 font-semibold block mt-0.5">
-                    Official Legal Benchmark
+                    Minimum Funds for Visa Purposes
+                  </span>
+                  <span className="text-[9px] text-slate-500 block font-normal">
+                    Statutory threshold, not extra living cost
                   </span>
                 </td>
                 {selectedCountries.map((c) => {
                   const rate = customRates[c.id] || c.defaultExchangeRateToPKR;
                   const proofPKR = c.statutoryAnnualLivingProof * rate;
                   return (
-                    <td key={c.id} className="py-3.5 px-4 border-l border-slate-200">
+                    <td key={c.id} className="py-3.5 px-4 border-l border-slate-200 space-y-1.5">
                       {c.id === 'uk' ? (
                         <div className="space-y-1">
                           <div>
-                            <span className="font-bold text-blue-700 block font-mono">
+                            <span className="font-bold text-blue-900 block font-mono">
                               London: £13,761 (£1,529/mo × 9)
                             </span>
                             <span className="text-xs font-semibold text-slate-700 font-mono">
@@ -326,52 +390,83 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
                               ≈ {formatCurrency(10539 * rate, 'PKR')}
                             </span>
                           </div>
+                          <p className="text-[10px] text-slate-600 leading-tight pt-0.5">
+                            Must also demonstrate remaining first-year tuition stated on CAS. Funds must be held continuously for at least 28 consecutive days.
+                          </p>
                         </div>
-                      ) : (
-                        <div>
-                          <span className="font-bold text-blue-700 block font-mono">
-                            {c.currencySymbol} {c.statutoryAnnualLivingProof.toLocaleString()} /yr
+                      ) : c.id === 'canada' ? (
+                        <div className="space-y-1">
+                          <span className="font-bold text-blue-900 block font-mono">
+                            CAD $23,448 (Single applicant)
+                          </span>
+                          <span className="text-xs font-semibold text-slate-700 block font-mono">
+                            ≈ {formatCurrency(23448 * rate, 'PKR')}
+                          </span>
+                          <p className="text-[10px] text-slate-600 leading-tight">
+                            IRCC statutory living benchmark for applications submitted on/after 1 September 2026 outside Quebec (excludes tuition and flights). Must also show capability to fund full duration of study.
+                          </p>
+                        </div>
+                      ) : c.id === 'south-korea' ? (
+                        <div className="space-y-2">
+                          <div>
+                            <span className="font-bold text-blue-900 block font-mono">
+                              ₩20,000,000 KRW (Illustrative benchmark)
+                            </span>
+                            <span className="text-xs font-semibold text-slate-700 block font-mono">
+                              ≈ {formatCurrency(20000000 * rate, 'PKR')}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-slate-700 leading-snug">
+                            The Korean Embassy in Pakistan asks applicants to demonstrate funds sufficient for the costs stated on their Certificate of Admission (CoA); requirements vary by institution, location, applicant, and current embassy guidance.
+                          </p>
+                          <div className="p-2 rounded-lg bg-white border border-amber-300 text-[10px] text-amber-950 font-mono leading-tight space-y-0.5">
+                            <div className="font-bold text-amber-900">Illustrative Combined Visa Readiness:</div>
+                            <div>Financial proof: {formatCurrency(Math.round(20000000 * rate), 'PKR')} (₩20M × {rate})</div>
+                            <div>Illustrative tuition: {formatCurrency(Math.round(5400000 * rate), 'PKR')} (₩5.4M × {rate})</div>
+                            <div>Pre-departure costs: PKR 450,000</div>
+                            <div className="font-bold border-t border-amber-200 pt-0.5 text-blue-900">
+                              Combined Total: {formatCurrency(Math.round(20000000 * rate + 5400000 * rate + 450000), 'PKR')}
+                            </div>
+                            <div className="text-[9px] text-slate-500 font-sans italic pt-0.5">
+                              *Adds stated financial-proof threshold, tuition and pre-departure costs. It is not an expense estimate because the financial-proof amount is an immigration threshold, not an additional living expense.
+                            </div>
+                          </div>
+                        </div>
+                      ) : c.id === 'germany' ? (
+                        <div className="space-y-1">
+                          <span className="font-bold text-blue-900 block font-mono">
+                            Blocked Account: €11,904 / year (€992/mo)
                           </span>
                           <span className="text-xs font-semibold text-slate-700 block font-mono">
                             ≈ {formatCurrency(proofPKR, 'PKR')}
                           </span>
+                          <p className="text-[10px] text-slate-600 leading-tight">
+                            Mandatory Sperrkonto deposited before visa interview. Funds are disbursed monthly to pay for student rent and food; not an extra fee on top of degree costs.
+                          </p>
                         </div>
-                      )}
-                      <p className="text-[11px] text-slate-600 mt-1 leading-snug">
-                        {c.officialProofOfFundsRequirement}
-                      </p>
-                    </td>
-                  );
-                })}
-              </tr>
-
-              {/* Row 4: Transparent First-Year All-In Total Calculation */}
-              <tr className="bg-blue-50/30">
-                <td className="py-3.5 px-4 font-bold text-slate-900 bg-slate-100/60">
-                  Est. 1st-Year Financial All-In
-                  <span className="text-[10px] font-normal text-slate-500 block mt-0.5">
-                    Tuition (min) + Statutory Proof + ~PKR 4.5L pre-departure
-                  </span>
-                </td>
-                {selectedCountries.map((c) => {
-                  const rate = customRates[c.id] || c.defaultExchangeRateToPKR;
-                  // First-year total calculation
-                  const firstYearPKR =
-                    (c.typicalTuitionMin + c.statutoryAnnualLivingProof) * rate + 450000;
-                  return (
-                    <td key={c.id} className="py-3.5 px-4 border-l border-slate-200 space-y-1">
-                      <span className="text-base font-extrabold text-blue-900 block font-mono">
-                        {formatCurrency(firstYearPKR, 'PKR')}
-                      </span>
-                      <span className="text-xs font-bold text-slate-600 block">
-                        {formatPakistaniDenominations(firstYearPKR)}
-                      </span>
-                      {c.id === 'south-korea' && (
-                        <div className="mt-1.5 p-2 rounded bg-white border border-blue-200 text-[11px] text-blue-950 font-mono leading-tight">
-                          <strong>Audited Calculation:</strong>
-                          <br />
-                          PKR 4,472,000 (Living Proof) + PKR 1,120,000 (Tuition) + PKR 450,000 (Pre-departure) ={' '}
-                          <strong>PKR 6,042,000</strong>
+                      ) : c.id === 'australia' ? (
+                        <div className="space-y-1">
+                          <span className="font-bold text-blue-900 block font-mono">
+                            AUD $29,710 / 12 months
+                          </span>
+                          <span className="text-xs font-semibold text-slate-700 block font-mono">
+                            ≈ {formatCurrency(proofPKR, 'PKR')}
+                          </span>
+                          <p className="text-[10px] text-slate-600 leading-tight">
+                            Department of Home Affairs Subclass 500 financial capacity requirement (single student). Plus full first-year tuition and ~AUD $2,000 return travel allowance.
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          <span className="font-bold text-blue-900 block font-mono">
+                            Certified on Form I-20 COA
+                          </span>
+                          <span className="text-xs font-semibold text-slate-700 block font-mono">
+                            Illustrative Living Component: ~$16,000 (≈ {formatCurrency(proofPKR, 'PKR')})
+                          </span>
+                          <p className="text-[10px] text-slate-600 leading-tight">
+                            8 CFR 214.2(f)(1)(i)(B). No universal federal dollar amount. Institution certifies exact first-year COA net of awarded assistantships/scholarships.
+                          </p>
                         </div>
                       )}
                     </td>
@@ -408,14 +503,39 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
                 </td>
                 {selectedCountries.map((c) => (
                   <td key={c.id} className="py-3 px-4 border-l border-slate-200 text-xs text-slate-700 leading-relaxed space-y-1.5">
-                    <div className="flex items-start space-x-1.5">
-                      <GraduationCap className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
-                      <span>{c.postStudyWorkVisa}</span>
-                    </div>
-                    {c.postStudyOfficialSource && (
-                      <div className="text-[10px] text-slate-500 bg-slate-50 p-1.5 rounded border border-slate-100">
-                        <strong>Source: </strong>{c.postStudyOfficialSource}
+                    {c.id === 'uk' ? (
+                      <div className="space-y-1.5">
+                        <div className="font-bold text-slate-900 text-[11px] flex items-center space-x-1">
+                          <GraduationCap className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+                          <span>UK Graduate Route (PSW) Effective Dates:</span>
+                        </div>
+                        <ul className="space-y-1 text-[11px] text-slate-700 pl-2 border-l-2 border-blue-400">
+                          <li>
+                            <strong className="text-slate-900">Before 1 January 2027:</strong> 2 years for eligible bachelor’s and master’s graduates.
+                          </li>
+                          <li>
+                            <strong className="text-slate-900">On or after 1 January 2027:</strong> 18 months for eligible bachelor’s and master’s graduates.
+                          </li>
+                          <li>
+                            <strong className="text-slate-900">Doctoral (PhD) graduates:</strong> 3 years (applicable both before and after 1 Jan 2027).
+                          </li>
+                        </ul>
+                        <div className="text-[10px] text-slate-500 bg-slate-50 p-1 rounded border border-slate-100">
+                          <strong>Source: </strong>UK Home Office / GOV.UK Statement of Changes in Immigration Rules.
+                        </div>
                       </div>
+                    ) : (
+                      <>
+                        <div className="flex items-start space-x-1.5">
+                          <GraduationCap className="w-3.5 h-3.5 text-slate-400 mt-0.5 shrink-0" />
+                          <span>{c.postStudyWorkVisa}</span>
+                        </div>
+                        {c.postStudyOfficialSource && (
+                          <div className="text-[10px] text-slate-500 bg-slate-50 p-1.5 rounded border border-slate-100">
+                            <strong>Source: </strong>{c.postStudyOfficialSource}
+                          </div>
+                        )}
+                      </>
                     )}
                   </td>
                 ))}
@@ -441,14 +561,14 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
               <tr>
                 <td className="py-3.5 px-4 font-semibold text-slate-800 bg-slate-50/50">
                   Verified Official Portals
-                  <span className="text-[10px] text-slate-500 block font-normal">Last verified: October 19, 2026</span>
+                  <span className="text-[10px] text-slate-500 block font-normal">Last verified: October 21, 2026</span>
                 </td>
                 {selectedCountries.map((c) => (
                   <td key={c.id} className="py-3.5 px-4 border-l border-slate-200 space-y-2">
                     <div className="flex items-center justify-between text-[11px] text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                       <span className="font-semibold flex items-center space-x-1">
                         <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                        <span>Verified</span>
+                        <span>Grounded Source</span>
                       </span>
                       <span className="font-mono text-[10px]">{c.lastVerifiedDate}</span>
                     </div>
@@ -499,68 +619,83 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
           <h2 className="text-lg font-bold text-slate-900">
             In-Depth Destination Intelligence & Key Advisories
           </h2>
-          <span className="text-xs text-slate-500">6 Verified Countries</span>
+          <span className="text-xs text-slate-500">6 Government-Benchmarked Profiles (Under Ongoing Verification)</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {COUNTRIES_DATA.map((c) => (
-            <div
-              key={c.id}
-              className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs flex flex-col justify-between space-y-4 hover:border-blue-300 transition-all"
-            >
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-2xl">{c.flag}</span>
-                    <h3 className="font-bold text-base text-slate-900">{c.name}</h3>
+          {COUNTRIES_DATA.map((c) => {
+            const rate = customRates[c.id] || c.defaultExchangeRateToPKR;
+            const tuitionBaseline = c.id === 'south-korea' ? 5400000 : c.typicalTuitionMin;
+            const livingBaseline = c.typicalLivingMin;
+            const preDeparture = 450000;
+            const firstYearExpensePKR = (tuitionBaseline + livingBaseline) * rate + preDeparture;
+            const proofPKR = c.statutoryAnnualLivingProof * rate;
+
+            return (
+              <div
+                key={c.id}
+                className="bg-white p-5 rounded-2xl border border-slate-200 shadow-2xs flex flex-col justify-between space-y-4 hover:border-blue-300 transition-all"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-2xl">{c.flag}</span>
+                      <h3 className="font-bold text-base text-slate-900">{c.name}</h3>
+                    </div>
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
+                      {c.currencyCode} ({c.currencySymbol})
+                    </span>
                   </div>
-                  <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">
-                    {c.currencyCode} ({c.currencySymbol})
-                  </span>
+
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    {c.notes}
+                  </p>
+
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-2">
+                    <div className="flex justify-between items-center text-slate-700">
+                      <span className="font-semibold text-emerald-900">Est. 1st-Yr Expenses:</span>
+                      <span className="font-bold text-emerald-800 font-mono">
+                        ≈ {formatCurrency(firstYearExpensePKR, 'PKR')}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-slate-600 border-t border-slate-200/60 pt-1.5">
+                      <span className="font-semibold text-slate-700">Visa Proof Benchmark:</span>
+                      <span className="font-bold text-blue-700 font-mono">
+                        {c.currencySymbol} {c.statutoryAnnualLivingProof.toLocaleString()} (≈ {formatCurrency(proofPKR, 'PKR')})
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-slate-600">
+                      <span className="font-semibold text-slate-700">Part-Time Work:</span>
+                      <span className="font-medium text-slate-900 text-right truncate max-w-[170px]">
+                        {c.partTimeWorkRights.split('(')[0]}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-slate-600">
+                      <span className="font-semibold text-slate-700">PSW Duration:</span>
+                      <span className="font-medium text-slate-900 text-right truncate max-w-[170px]">
+                        {c.postStudyWorkVisa.split('(')[0]}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  {c.notes}
-                </p>
-
-                <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1.5">
-                  <div className="flex justify-between text-slate-600">
-                    <span className="font-semibold text-slate-700">Statutory Living Proof:</span>
-                    <span className="font-bold text-blue-700 font-mono">
-                      {c.currencySymbol} {c.statutoryAnnualLivingProof.toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span className="font-semibold text-slate-700">Part-Time Work:</span>
-                    <span className="font-medium text-slate-900 text-right truncate max-w-[170px]">
-                      {c.partTimeWorkRights.split('(')[0]}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-slate-600">
-                    <span className="font-semibold text-slate-700">PSW Duration:</span>
-                    <span className="font-medium text-slate-900 text-right truncate max-w-[170px]">
-                      {c.postStudyWorkVisa.split('(')[0]}
-                    </span>
+                <div className="pt-3 border-t border-slate-100 space-y-2 text-xs">
+                  <div className="flex items-center justify-between text-[11px] text-slate-500">
+                    <span>Last checked: {c.lastVerifiedDate}</span>
+                    <a
+                      href={c.officialSourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-blue-700 hover:text-blue-900 flex items-center space-x-1"
+                    >
+                      <span>View official source</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
                   </div>
                 </div>
               </div>
-
-              <div className="pt-3 border-t border-slate-100 space-y-2 text-xs">
-                <div className="flex items-center justify-between text-[11px] text-slate-500">
-                  <span>Last verified: {c.lastVerifiedDate}</span>
-                  <a
-                    href={c.officialSourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-semibold text-blue-700 hover:text-blue-900 flex items-center space-x-1"
-                  >
-                    <span>View official source</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

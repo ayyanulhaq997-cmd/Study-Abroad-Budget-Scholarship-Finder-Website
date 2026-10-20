@@ -82,15 +82,27 @@ function runCountryComparisonTests() {
         'South Korea cites official HiKorea / Ministry of Justice portal'
       );
 
-      // Verify exact arithmetic from prompt:
-      // PKR 4,472,000 + PKR 1,120,000 + PKR 450,000 = PKR 6,042,000
-      const livingProofPKR = 4472000;
-      const tuitionPKR = 1120000;
+      // Verify exact arithmetic requested in audit:
+      // ₩20,000,000 * 0.208 = PKR 4,160,000 (Financial Proof Benchmark)
+      // ₩5,400,000 * 0.208 = PKR 1,123,200 (Illustrative Tuition)
+      // PKR 450,000 (Pre-departure Costs)
+      // Combined Illustrative Total = PKR 5,733,200
+      const statedFinancialProofPKR = Math.round(20000000 * 0.208); // 4,160,000
+      const illustrativeTuitionPKR = Math.round(5400000 * 0.208); // 1,123,200
       const preDeparturePKR = 450000;
-      const totalFirstYearPKR = livingProofPKR + tuitionPKR + preDeparturePKR;
+      const combinedTotalPKR = statedFinancialProofPKR + illustrativeTuitionPKR + preDeparturePKR;
+
       assert(
-        totalFirstYearPKR === 6042000,
-        'South Korea arithmetic: PKR 4,472,000 + PKR 1,120,000 + PKR 450,000 = PKR 6,042,000'
+        statedFinancialProofPKR === 4160000,
+        'South Korea stated financial proof: ₩20,000,000 × 0.208 = PKR 4,160,000'
+      );
+      assert(
+        illustrativeTuitionPKR === 1123200,
+        'South Korea illustrative tuition: ₩5,400,000 × 0.208 = PKR 1,123,200'
+      );
+      assert(
+        combinedTotalPKR === 5733200,
+        'South Korea combined illustrative amount: PKR 4,160,000 + PKR 1,123,200 + PKR 450,000 = PKR 5,733,200'
       );
     }
   }

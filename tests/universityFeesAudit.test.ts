@@ -24,7 +24,7 @@ function runUniversityFeesAuditTests() {
 
     for (const uni of UNIVERSITIES_DATA) {
       assert(
-        Boolean(uni.feeAcademicYear && uni.feeAcademicYear.includes('2025/2026')),
+        Boolean(uni.feeAcademicYear && (uni.feeAcademicYear.includes('2025/2026') || uni.feeAcademicYear.includes('2026'))),
         `${uni.name} fee is tied to a specific academic year (${uni.feeAcademicYear})`
       );
 

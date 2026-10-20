@@ -25,9 +25,13 @@ import {
   ShieldAlert,
   SlidersHorizontal,
   Info,
+  Check,
+  Clock,
 } from 'lucide-react';
 import {
   SCHOLARSHIPS_DATA,
+  OPEN_VERIFIED_SCHOLARSHIPS,
+  UPCOMING_VERIFIED_SCHOLARSHIPS,
   ACTIVE_VERIFIED_SCHOLARSHIPS,
   CLOSED_VERIFIED_SCHOLARSHIPS,
   DISCONTINUED_SCHOLARSHIPS,
@@ -128,7 +132,33 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
     });
   };
 
-  // Active verified scholarships (kept strictly separated from unverified records by default)
+  // Open / Course-Specific verified scholarships
+  const filteredOpenScholarships = useMemo(() => {
+    return applyFilters(OPEN_VERIFIED_SCHOLARSHIPS);
+  }, [
+    searchQuery,
+    filterCountry,
+    filterDegree,
+    filterSubject,
+    filterFundingType,
+    filterMaxIelts,
+    filterMinPercentage,
+  ]);
+
+  // Upcoming verified scholarships (currently closed, awaiting official announcement)
+  const filteredUpcomingScholarships = useMemo(() => {
+    return applyFilters(UPCOMING_VERIFIED_SCHOLARSHIPS);
+  }, [
+    searchQuery,
+    filterCountry,
+    filterDegree,
+    filterSubject,
+    filterFundingType,
+    filterMaxIelts,
+    filterMinPercentage,
+  ]);
+
+  // Active verified scholarships (open rolling + upcoming awaiting announcement)
   const filteredActiveScholarships = useMemo(() => {
     return applyFilters(ACTIVE_VERIFIED_SCHOLARSHIPS);
   }, [
@@ -141,7 +171,7 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
     filterMinPercentage,
   ]);
 
-  // Closed verified scholarships (e.g. Fulbright 2027 closed April 1, Australia Awards 2027 closed April 30)
+  // Closed verified scholarships (e.g. Chevening, Commonwealth, Fulbright, Australia Awards)
   const filteredClosedScholarships = useMemo(() => {
     return applyFilters(CLOSED_VERIFIED_SCHOLARSHIPS);
   }, [
@@ -197,7 +227,7 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
           Scholarship Finder & Eligibility Matcher
         </h1>
         <p className="text-sm text-slate-600 mt-1 max-w-3xl">
-          Search authentic government and university scholarships verified against official primary sources (e.g., USEFP, Chevening, DAAD, NIIED). Closed intake cycles, discontinued programs, and unverified placeholders are segregated with clear notices.
+          Search authentic government and university scholarships verified against official primary sources (e.g., USEFP, Chevening, CSC UK, DAAD, NIIED). Closed intake cycles, discontinued programs, and unverified placeholders are segregated with clear notices.
         </p>
 
         {/* Editorial Standards Advisory Banner */}
@@ -225,7 +255,9 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
           }`}
         >
           <Search className="w-4 h-4" />
-          <span>Directory ({filteredActiveScholarships.length} Active, {filteredClosedScholarships.length} Closed 2027)</span>
+          <span>
+            Directory ({filteredOpenScholarships.length} Rolling, {filteredUpcomingScholarships.length} Awaiting, {filteredClosedScholarships.length} Closed)
+          </span>
         </button>
 
         <button
@@ -341,18 +373,26 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
 
             {/* Quick Toggle Controls */}
             <div className="flex flex-wrap items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-600 gap-2">
-              <div className="flex items-center space-x-2">
-                <span className="font-semibold text-slate-700">Displaying:</span>
-                <span className="bg-emerald-50 text-emerald-800 px-2 py-0.5 rounded font-medium border border-emerald-200">
-                  {filteredActiveScholarships.length} Active Verified Opportunities
+              <div className="flex items-center space-x-2 flex-wrap gap-1.5">
+                <span className="font-semibold text-slate-700">Audit Status:</span>
+                <span className="bg-sky-50 text-sky-800 px-2.5 py-0.5 rounded font-medium border border-sky-200">
+                  {filteredOpenScholarships.length} Rolling / Course-Specific Windows
+                </span>
+                <span className="bg-amber-50 text-amber-800 px-2.5 py-0.5 rounded font-medium border border-amber-200">
+                  {filteredUpcomingScholarships.length} Awaiting 2027 Announcement (Dates Expected)
                 </span>
                 {filteredClosedScholarships.length > 0 && (
-                  <span className="bg-rose-50 text-rose-800 px-2 py-0.5 rounded font-medium border border-rose-200">
-                    {filteredClosedScholarships.length} Closed (2027 Cycle Past Deadline)
+                  <span className="bg-rose-50 text-rose-800 px-2.5 py-0.5 rounded font-medium border border-rose-200">
+                    {filteredClosedScholarships.length} Closed Cycles (Past Official Deadline)
+                  </span>
+                )}
+                {filteredDiscontinuedScholarships.length > 0 && (
+                  <span className="bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded font-medium border border-slate-300">
+                    {filteredDiscontinuedScholarships.length} Discontinued
                   </span>
                 )}
                 {filteredUnverifiedScholarships.length > 0 && (
-                  <span className="bg-amber-50 text-amber-800 px-2 py-0.5 rounded font-medium border border-amber-200">
+                  <span className="bg-amber-50 text-amber-800 px-2.5 py-0.5 rounded font-medium border border-amber-200">
                     {filteredUnverifiedScholarships.length} Unverified Segregated
                   </span>
                 )}
@@ -375,15 +415,15 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
             </div>
           </div>
 
-          {/* Section 1: ACTIVE VERIFIED SCHOLARSHIPS */}
+          {/* Section 1: OPEN ROLLING & UPCOMING VERIFIED SCHOLARSHIPS */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 tracking-tight">
-                  Verified Opportunities ({filteredActiveScholarships.length})
+                  Course-Specific & Upcoming Verified Opportunities ({filteredActiveScholarships.length})
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Verified active programs with confirmed official sources and application links.
+                  Verified against official primary portals. Programs with course-specific deadlines are actively rolling; unannounced 2027 opening schedules remain labelled expected until officially published.
                 </p>
               </div>
               <span className="text-xs text-slate-500 font-medium hidden sm:inline-block">
@@ -400,11 +440,35 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
                 >
                   <div className="space-y-4">
                     {/* Top Bar: Verification Badge & Funding Badge */}
-                    <div className="flex items-start justify-between gap-2">
-                      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>Officially Verified (Active)</span>
-                      </span>
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div className="flex items-center space-x-1.5 flex-wrap gap-1">
+                        {s.programStatus === 'Applications Open' && (
+                          <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
+                            <Check className="w-3.5 h-3.5 text-emerald-700" />
+                            <span>Applications Currently Open</span>
+                          </span>
+                        )}
+                        {s.programStatus === 'Course-Specific Deadlines' && (
+                          <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-100 text-sky-800 border border-sky-300">
+                            <Clock className="w-3.5 h-3.5 text-sky-700" />
+                            <span>Course-Specific Deadlines</span>
+                          </span>
+                        )}
+                        {s.programStatus === 'Awaiting Announcement' && (
+                          <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                            <Clock className="w-3.5 h-3.5 text-amber-700" />
+                            <span>Applications Closed (Expected Opening)</span>
+                          </span>
+                        )}
+                        {s.programStatus !== 'Applications Open' &&
+                          s.programStatus !== 'Course-Specific Deadlines' &&
+                          s.programStatus !== 'Awaiting Announcement' && (
+                            <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>{s.programStatus}</span>
+                            </span>
+                          )}
+                      </div>
 
                       <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-blue-100 text-blue-800">
                         {s.fundingType}
@@ -443,10 +507,37 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
                       )}
                     </div>
 
-                    {/* Benefits Summary */}
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-700 space-y-1">
-                      <span className="font-bold text-slate-900 block">Coverage & Precise Limitations:</span>
-                      <p className="leading-relaxed">{s.benefitsSummary}</p>
+                    {/* Coverage & Entitlements Breakdown */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-2.5">
+                      <div className="space-y-1">
+                        <span className="font-bold text-slate-900 block flex items-center space-x-1.5">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Confirmed Core Entitlements:</span>
+                        </span>
+                        {s.confirmedBenefits && s.confirmedBenefits.length > 0 ? (
+                          <ul className="space-y-1 pl-4 list-disc text-slate-700 text-[11px]">
+                            {s.confirmedBenefits.map((b, idx) => (
+                              <li key={idx} className="leading-tight">{b}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="leading-relaxed text-[11px]">{s.benefitsSummary}</p>
+                        )}
+                      </div>
+
+                      {s.conditionalBenefits && s.conditionalBenefits.length > 0 && (
+                        <div className="pt-2 border-t border-slate-200 space-y-1">
+                          <span className="font-bold text-amber-900 block flex items-center space-x-1.5 text-[11px]">
+                            <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                            <span>Course-Dependent or Conditional Benefits:</span>
+                          </span>
+                          <ul className="space-y-1 pl-4 list-disc text-amber-950 text-[11px]">
+                            {s.conditionalBenefits.map((b, idx) => (
+                              <li key={idx} className="leading-tight">{b}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
 
                     {/* Published Minimum Requirements */}
@@ -593,6 +684,39 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
                           <span className="px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 font-medium">
                             Work Experience ({s.workExperienceYearsNeeded || 2} yrs)
                           </span>
+                        )}
+                      </div>
+
+                      {/* Coverage & Entitlements Breakdown */}
+                      <div className="p-3.5 rounded-xl bg-white border border-slate-200 text-xs text-slate-700 space-y-2.5">
+                        <div className="space-y-1">
+                          <span className="font-bold text-slate-900 block flex items-center space-x-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>Confirmed Core Entitlements:</span>
+                          </span>
+                          {s.confirmedBenefits && s.confirmedBenefits.length > 0 ? (
+                            <ul className="space-y-1 pl-4 list-disc text-slate-700 text-[11px]">
+                              {s.confirmedBenefits.map((b, idx) => (
+                                <li key={idx} className="leading-tight">{b}</li>
+                              ))}
+                            </ul>
+                          ) : (
+                            <p className="leading-relaxed text-[11px]">{s.benefitsSummary}</p>
+                          )}
+                        </div>
+
+                        {s.conditionalBenefits && s.conditionalBenefits.length > 0 && (
+                          <div className="pt-2 border-t border-slate-100 space-y-1">
+                            <span className="font-bold text-amber-900 block flex items-center space-x-1.5 text-[11px]">
+                              <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
+                              <span>Course-Dependent or Conditional Benefits:</span>
+                            </span>
+                            <ul className="space-y-1 pl-4 list-disc text-amber-950 text-[11px]">
+                              {s.conditionalBenefits.map((b, idx) => (
+                                <li key={idx} className="leading-tight">{b}</li>
+                              ))}
+                            </ul>
+                          </div>
                         )}
                       </div>
 

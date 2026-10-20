@@ -83,6 +83,8 @@ export interface Scholarship {
   replacementProgramSummary?: string;
   replacementProgramUrl?: string;
   benefitsSummary: string;
+  confirmedBenefits?: string[]; // Guaranteed core benefits across all recipients
+  conditionalBenefits?: string[]; // Benefits that depend on a particular course, host university, or award category
   eligibilityRequirements: string[];
   notesForPakistaniStudents?: string;
 }
@@ -94,16 +96,20 @@ export interface University {
   city: string;
   currencyCode: string;
   currencySymbol: string;
-  feeAcademicYear: string; // Specific academic year (e.g. '2025/2026 Academic Year')
-  feeProgramScope: string; // Specific program / degree tier (e.g. 'Non-EU Graduate Master\'s / Engineering')
+  feeAcademicYear: string; // Specific academic year (e.g. '2026 Entry' or '2025/2026 Academic Year')
+  feeProgramScope: string; // Specific program / degree tier (e.g. 'Postgraduate Taught: MSc Advanced Computer Science')
+  directCoursePageUrl?: string; // Direct link to specific official course page
   typicalAnnualTuitionMin: number | null; // null if unknown/variable
   typicalAnnualTuitionMax: number | null;
   tuitionNote: string;
   estimatedCityLivingAnnual: number;
+  livingCostBreakdownNote?: string; // Transparent breakdown (rent, food, transit, utilities) and estimate label
+  officialLivingCostGuidanceUrl?: string; // Direct official university/student union cost of living guide
   officialFeeScheduleUrl: string; // Direct link to official tuition fee schedule
   institutionalScholarships: string[]; // Exclusively university-funded / internally administered awards
   externalFundingOpportunities: string[]; // External / Government-sponsored opportunities (never described as university-funded)
   popularPrograms: string[];
+  admissionsProgramScope?: string; // Specific program/faculty scope for the admissions criteria
   admissionRequirementsSummary: string;
   officialAdmissionsUrl: string;
   lastVerifiedDate: string;

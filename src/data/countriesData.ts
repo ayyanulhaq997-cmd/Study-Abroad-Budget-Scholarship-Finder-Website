@@ -45,8 +45,8 @@ export const COUNTRIES_DATA: Country[] = [
         sourceType: 'Official Agency',
       },
     ],
-    notes: 'Most public universities do not charge general tuition, requiring only a mandatory semester fee (Semesterbeitrag: €150–€400/semester including public transit pass). However, the federal state of Baden-Württemberg charges €1,500/semester for non-EU students, and Technical University of Munich (TUM) charges non-EU tuition fees.',
-    lastVerifiedDate: 'October 19, 2026',
+    notes: 'Simplified public-university estimate: €0–€3,000/yr. Most German public universities in 15 of 16 federal states charge €0 tuition (only a mandatory semester fee of €150–€400/semester covering student services and transit). Exceptions exist: Baden-Württemberg statutorily charges €1,500/semester (€3,000/yr) for non-EU students; Technical University of Munich (TUM) charges non-EU international tuition of €4,000–€12,000/yr for master’s programs in CIT/Engineering; and private universities set independent fee scales.',
+    lastVerifiedDate: 'October 21, 2026',
     officialSourceUrl: 'https://www.make-it-in-germany.com/en/study-training/studies-in-germany',
   },
   {
@@ -62,10 +62,10 @@ export const COUNTRIES_DATA: Country[] = [
     typicalTuitionMax: 12000000, // ₩12,000,000 KRW/yr (private / STEM / medical universities)
     typicalLivingMin: 9600000, // ₩800,000/mo = ₩9,600,000 KRW/yr
     typicalLivingMax: 15600000, // ₩1,300,000/mo = ₩15,600,000 KRW/yr
-    officialProofOfFundsRequirement: 'D-2 Student Visa bank balance requirement is set by the Ministry of Justice / Korea Immigration Service: typically ₩16,000,000 to ₩20,000,000 KRW for universities in the Seoul Metropolitan Area (approx. ₩14,000,000 to ₩18,000,000 KRW for universities outside Seoul), or documented foreign currency equivalent. There is no single universal bank amount.',
-    statutoryAnnualLivingProof: 20000000, // Seoul benchmark in KRW (approx. $14,800–$16,000 USD depending on exchange rate)
-    statutoryProofDetails: 'Typically ₩16,000,000–₩20,000,000 KRW depending on campus location (Seoul vs. Regional). Documented conversion: ₩21,500,000 KRW ≈ $16,000 USD at 1,343 KRW/USD (PKR 4,472,000 at 279.50 PKR/USD).',
-    visaProcessingWeeks: 'Variable estimates: typically 3 to 6 weeks at the Embassy of the Republic of Korea in Islamabad',
+    officialProofOfFundsRequirement: 'D-2 Student Visa bank balance requirements are determined based on the applicant’s Certificate of Admission (CoA). The Embassy of the Republic of Korea in Pakistan asks applicants to demonstrate funds sufficient for the costs stated on their admission documentation. While Ministry of Justice guidelines set illustrative regional benchmarks (typically ₩16,000,000 to ₩20,000,000 KRW for universities in the Seoul Metropolitan Area, and ₩14,000,000 to ₩18,000,000 KRW for universities outside Seoul), requirements vary by institution, location, applicant, and current embassy guidance. No single amount is universally applicable.',
+    statutoryAnnualLivingProof: 20000000, // Seoul illustrative benchmark in KRW
+    statutoryProofDetails: 'Illustrative regional benchmark: ₩20,000,000 KRW. At stated rate of 1 KRW = 0.208 PKR: ₩20,000,000 × 0.208 = PKR 4,160,000. The Korean Embassy in Pakistan asks applicants to demonstrate funds sufficient for the costs stated on their Certificate of Admission (CoA); requirements vary by institution and campus location.',
+    visaProcessingWeeks: 'Variable estimates: typically 3 to 6 weeks at the Embassy of the Republic of Korea in Islamabad (checked October 2026)',
     partTimeWorkRights: 'Part-time work is NOT automatic. It requires formal S-3 Part-time Work Permission from the Korea Immigration Service and university endorsement. Permitted hours depend on degree level, academic standing, and Korean language proficiency (TOPIK): typically 10 to 25 hours per week during term for eligible students, unrestricted during vacations.',
     workRightsOfficialSource: 'Ministry of Justice (Korea Immigration Service) Regulations on Stay and Part-Time Work Permission for International Students (D-2).',
     postStudyWorkVisa: 'D-10-1 (Job Seeker Visa): Granted conditionally rather than as a universal flat period. Initial grant is 6 months. For international graduates of accredited domestic Korean universities: Master’s and Doctoral degree holders are exempt from the points system and can extend stay in 6-month increments up to 2 years total (and up to 3 years for PhD holders in advanced technology / high-tech fields); Bachelor’s degree holders from Korean institutions are points-exempt with GPA ≥ 3.0 (or TOPIK level 4+) and can extend up to 2 years (or up to 1 year if below 3.0 via points). For graduates of foreign (overseas) universities: must score at least 60 points out of 190 (with ≥ 20 basic points) under the D-10 Points-Based System, with duration capped at up to 1 year, unless holding a degree from a Times Higher Education Top 200 / QS Top 500 university or Fortune 500 employment experience (eligible up to 2 years). Extensions require verifiable documentation of active job search activities.',
@@ -93,8 +93,8 @@ export const COUNTRIES_DATA: Country[] = [
         sourceType: 'Government',
       },
     ],
-    notes: 'Korean tuition and living costs are originally billed in KRW. Converted amounts to USD or PKR must state explicit exchange rates. Audited 1st-year baseline calculation: PKR 4,472,000 (Living / Financial Proof) + PKR 1,120,000 (Tuition: ₩5.4M @ 0.208) + PKR 450,000 (Pre-departure Costs) = PKR 6,042,000. Many universities award 30%–100% scholarships based on GPA and TOPIK.',
-    lastVerifiedDate: 'October 19, 2026',
+    notes: 'Korean tuition and living costs are originally billed in KRW. Converted amounts to PKR use explicit exchange rates (stated illustrative rate: 1 KRW = 0.208 PKR). Illustrative visa financial-readiness calculation: PKR 4,160,000 (stated financial proof: ₩20,000,000 × 0.208) + PKR 1,123,200 (illustrative annual tuition: ₩5,400,000 × 0.208) + PKR 450,000 (Pre-departure Costs) = PKR 5,733,200. Note: This adds the stated financial-proof threshold, tuition and pre-departure costs. It is not an all-in expense estimate because the financial-proof amount is not an additional living expense.',
+    lastVerifiedDate: 'October 21, 2026',
     officialSourceUrl: 'https://www.studyinkorea.go.kr',
   },
   {
@@ -113,7 +113,7 @@ export const COUNTRIES_DATA: Country[] = [
     officialProofOfFundsRequirement: 'Form I-20 Cost of Attendance (COA): Under 8 CFR 214.2(f)(1)(i)(B), there is no universal federal dollar amount. Financial evidence must cover 100% of the first-year tuition, mandatory institutional fees, and estimated living expenses certified by the specific SEVP-approved school on Form I-20, net of verified scholarships or assistantships.',
     statutoryAnnualLivingProof: 16000, // Illustrative institutional COA living component
     statutoryProofDetails: 'Determined institution-by-institution on Form I-20 by the Designated School Official (DSO). Ranges from ~$12,000 to $25,000+ depending on campus location and housing type.',
-    visaProcessingWeeks: 'Variable estimates: typically 4 to 12 weeks (subject to F-1 interview appointment slot availability at US Embassy Islamabad or Consulate Karachi)',
+    visaProcessingWeeks: 'Variable estimates: typically 4 to 12 weeks (subject to F-1 interview appointment slot availability at US Embassy Islamabad or Consulate Karachi; checked October 2026)',
     partTimeWorkRights: 'On-campus work is permitted up to 20 hours per week during academic terms (full-time during official school recesses) per 8 CFR 214.2(f)(9)(i). Off-campus work is strictly prohibited during the first academic year and requires prior specific authorization (CPT authorized by DSO, or OPT / severe economic hardship authorized with a USCIS Employment Authorization Document).',
     workRightsOfficialSource: '8 CFR 214.2(f)(9) - US Department of Homeland Security / USCIS F-1 Employment Regulations.',
     postStudyWorkVisa: 'Optional Practical Training (OPT): 12 months for eligible degree graduates, plus 24-month STEM OPT Extension (total 36 months for qualifying STEM degree recipients).',
@@ -137,7 +137,7 @@ export const COUNTRIES_DATA: Country[] = [
       },
     ],
     notes: 'No universal federal bank requirement exists for the US F-1 student visa. The amount is determined strictly by the certified institution on Form I-20. Graduate assistantships (RA/TA) at research universities frequently waive 100% of tuition and provide a monthly living stipend. F-1 applicants must demonstrate non-immigrant intent.',
-    lastVerifiedDate: 'October 19, 2026',
+    lastVerifiedDate: 'October 21, 2026',
     officialSourceUrl: 'https://studyinthestates.dhs.gov',
   },
   {
@@ -153,10 +153,10 @@ export const COUNTRIES_DATA: Country[] = [
     typicalTuitionMax: 38000,
     typicalLivingMin: 21000,
     typicalLivingMax: 27000,
-    officialProofOfFundsRequirement: 'IRCC mandatory living-funds requirement: CAD $23,448 for a single applicant for study permit applications submitted on or after 1 September 2026 (excluding tuition and transportation/flights).',
+    officialProofOfFundsRequirement: 'IRCC mandatory living-funds requirement: CAD $23,448 for a single applicant for study permit applications submitted on or after 1 September 2026 (outside Quebec, excluding tuition and transportation/flights). Applicants must also demonstrate sufficient financial resources for subsequent years of study.',
     statutoryAnnualLivingProof: 23448,
     statutoryProofDetails: 'CAD $23,448 per year for a single applicant (indexed by IRCC to Statistics Canada Low-Income Cut-Off - LICO). Additional funds required if accompanying family members are included.',
-    visaProcessingWeeks: 'Variable estimates: typically 7 to 12 weeks for Pakistani applicants under standard study permit queues',
+    visaProcessingWeeks: 'Variable estimates: typically 7 to 12 weeks for Pakistani applicants under standard study permit queues (checked October 2026)',
     partTimeWorkRights: 'Eligible full-time post-secondary students may work off-campus up to 24 hours per week during regular academic sessions (updated from 20 hours per IRCC regulations), and full-time during scheduled academic breaks (reading weeks and summer breaks).',
     workRightsOfficialSource: 'Immigration, Refugees and Citizenship Canada (IRCC) - Student Off-Campus Work Regulations.',
     postStudyWorkVisa: 'Post-Graduation Work Permit (PGWP): up to 3 years depending on program duration, credential level, and field of study at eligible Designated Learning Institutions (DLIs).',
@@ -175,7 +175,7 @@ export const COUNTRIES_DATA: Country[] = [
       },
     ],
     notes: 'Provincial/Territorial Attestation Letters (PAL/TAL) are required for most undergraduate study permit applications under federal enrollment caps, but exemptions exist (including master’s and doctoral degree applicants, visiting/exchange students, and study permit extensions). Applicants must check eligibility for their specific program.',
-    lastVerifiedDate: 'October 19, 2026',
+    lastVerifiedDate: 'October 21, 2026',
     officialSourceUrl: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada.html',
   },
   {
@@ -196,16 +196,21 @@ export const COUNTRIES_DATA: Country[] = [
     statutoryLivingProofLondon: 13761, // £1,529 x 9
     statutoryLivingProofNonLondon: 10539, // £1,171 x 9
     statutoryProofDetails: 'London: £1,529/month × 9 months = £13,761. Outside London: £1,171/month × 9 months = £10,539. Required funds must be held in an acceptable bank account for a consecutive 28-day period ending no more than 31 days before application.',
-    visaProcessingWeeks: 'Variable estimates: standard decision is typically 3 weeks from biometric enrollment at VFS Global in Pakistan',
+    visaProcessingWeeks: 'Variable estimates: standard decision is typically 3 weeks from biometric enrollment at VFS Global in Pakistan (checked October 2026)',
     partTimeWorkRights: 'Up to 20 hours per week during term time for degree-level studies at higher education providers; full-time during official vacation periods.',
     workRightsOfficialSource: 'UKVI Student Visa Guidance, Appendix Student (ST 26.1).',
-    postStudyWorkVisa: 'Graduate Route (PSW): 2 years for degree graduates (3 years for PhD) applying before 1 Jan 2027. Effective 1 January 2027: 18 months for eligible bachelor’s and master’s graduates, and 3 years for doctoral graduates.',
-    postStudyOfficialSource: 'UK Home Office - Graduate Visa Regulations & Statement of Changes in Immigration Rules.',
+    postStudyWorkVisa: 'Graduate Route (PSW): For eligible applications made before 1 January 2027: 2 years for eligible bachelor’s and master’s graduates. Effective 1 January 2027: 18 months for eligible bachelor’s and master’s graduates, and 3 years for doctoral graduates (applicable both before and after 1 January 2027).',
+    postStudyOfficialSource: 'UK Home Office - Graduate Visa Regulations & Statement of Changes in Immigration Rules (GOV.UK).',
     popularSubjects: ['Computer Science', 'Data Analytics', 'Fintech & Finance', 'Law', 'Global Public Health'],
     officialLinks: [
       {
         title: 'UK Visas and Immigration (Student Visa Official Guidance)',
         url: 'https://www.gov.uk/student-visa',
+        sourceType: 'Government',
+      },
+      {
+        title: 'GOV.UK Graduate Route Visa Guidance',
+        url: 'https://www.gov.uk/graduate-visa',
         sourceType: 'Government',
       },
       {
@@ -220,7 +225,7 @@ export const COUNTRIES_DATA: Country[] = [
       },
     ],
     notes: 'Most UK Master’s degrees are completed in 1 calendar year (12 months), reducing overall tuition and living expenses compared to 2-year programs in other destinations. Financial maintenance funds must strictly satisfy the 28-day rule.',
-    lastVerifiedDate: 'October 19, 2026',
+    lastVerifiedDate: 'October 21, 2026',
     officialSourceUrl: 'https://www.gov.uk/student-visa',
   },
   {
@@ -239,7 +244,7 @@ export const COUNTRIES_DATA: Country[] = [
     officialProofOfFundsRequirement: 'Department of Home Affairs financial capacity requirement: AUD $29,710 for 12 months living expenses (for a single student applicant), plus full first-year tuition and return travel allowance (approx. AUD $2,000).',
     statutoryAnnualLivingProof: 29710,
     statutoryProofDetails: 'AUD $29,710 per year for a single applicant (legislative instrument under Subclass 500). Additional funds required for accompanying spouse (AUD $10,394) and child (AUD $4,449).',
-    visaProcessingWeeks: 'Variable estimates: typically 4 to 8 weeks for Higher Education sector (subject to Home Affairs processing queues)',
+    visaProcessingWeeks: 'Variable estimates: typically 4 to 8 weeks for Higher Education sector (subject to Home Affairs processing queues; checked October 2026)',
     partTimeWorkRights: '48 hours per fortnight (two-week period) while course is in session; unrestricted during scheduled course holidays. Exceptions: Master by research and PhD students have unrestricted work rights once their course commences; mandatory course-integrated work placements do not count toward the 48-hour limit.',
     workRightsOfficialSource: 'Condition 8105 - Australian Migration Regulations 1994 / Department of Home Affairs.',
     postStudyWorkVisa: 'Subclass 485 (Post-Higher Education Work stream): Bachelor’s (including Honours): 2 years; Master’s by Coursework or Extended: 2 years; Master’s by Research: 3 years; Doctoral (PhD): 3 years. Designated regional study adds 1 to 2 additional years.',
@@ -258,7 +263,7 @@ export const COUNTRIES_DATA: Country[] = [
       },
     ],
     notes: 'Australia assesses student visa applications under the Genuine Student (GS) requirement. Applicants must prove genuine access to funds held in their name or eligible sponsors.',
-    lastVerifiedDate: 'October 19, 2026',
+    lastVerifiedDate: 'October 21, 2026',
     officialSourceUrl: 'https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500',
   },
 ];

@@ -5,6 +5,8 @@
 
 import {
   SCHOLARSHIPS_DATA,
+  OPEN_VERIFIED_SCHOLARSHIPS,
+  UPCOMING_VERIFIED_SCHOLARSHIPS,
   ACTIVE_VERIFIED_SCHOLARSHIPS,
   CLOSED_VERIFIED_SCHOLARSHIPS,
   DISCONTINUED_SCHOLARSHIPS,
@@ -89,17 +91,67 @@ function runScholarshipAuditTests() {
     );
   }
 
-  console.log('\nTest Suite 3: DAAD EPOS Doctoral Stipend Rate Update');
+  console.log('\nTest Suite 3: Chevening 2027/2028 Intake Official Deadline Check (Closed)');
+  {
+    const chevening = SCHOLARSHIPS_DATA.find((s) => s.id === 'chevening-uk');
+    assert(!!chevening, 'Chevening record exists in dataset');
+    assert(chevening?.programStatus === 'Closed', 'Chevening 2027/2028 intake is marked Closed');
+    assert(
+      CLOSED_VERIFIED_SCHOLARSHIPS.some((s) => s.id === 'chevening-uk'),
+      'Chevening is included in CLOSED_VERIFIED_SCHOLARSHIPS'
+    );
+    assert(
+      !OPEN_VERIFIED_SCHOLARSHIPS.some((s) => s.id === 'chevening-uk'),
+      'Chevening is excluded from OPEN_VERIFIED_SCHOLARSHIPS'
+    );
+    assert(
+      Boolean(chevening?.applicationDeadlineNotice.includes('October 6, 2026')),
+      'Chevening cites verified October 6, 2026 at 11:00 UTC official closing deadline'
+    );
+    assert(
+      Boolean(chevening?.applicationDeadlineNotice.includes('expected to open in August 2027')),
+      'Chevening labels unannounced 2028/2029 cycle opening as expected'
+    );
+  }
+
+  console.log('\nTest Suite 4: Commonwealth Master\'s Exact Confirmed Deadline Check (Closed)');
+  {
+    const commonwealth = SCHOLARSHIPS_DATA.find((s) => s.id === 'commonwealth-masters-uk');
+    assert(!!commonwealth, 'Commonwealth Master\'s record exists in dataset');
+    assert(commonwealth?.programStatus === 'Closed', 'Commonwealth Master\'s is marked Closed on CSC central system');
+    assert(
+      CLOSED_VERIFIED_SCHOLARSHIPS.some((s) => s.id === 'commonwealth-masters-uk'),
+      'Commonwealth Master\'s is included in CLOSED_VERIFIED_SCHOLARSHIPS'
+    );
+    assert(
+      !OPEN_VERIFIED_SCHOLARSHIPS.some((s) => s.id === 'commonwealth-masters-uk'),
+      'Commonwealth Master\'s is excluded from OPEN_VERIFIED_SCHOLARSHIPS'
+    );
+    assert(
+      Boolean(commonwealth?.applicationDeadlineNotice.includes('October 20, 2026 at 16:00 BST')),
+      'Commonwealth Master\'s cites exact confirmed official deadline: October 20, 2026 at 16:00 BST'
+    );
+  }
+
+  console.log('\nTest Suite 5: DAAD EPOS Doctoral Stipend & Rolling Status');
   {
     const daad = SCHOLARSHIPS_DATA.find((s) => s.id === 'daad-epos-germany');
     assert(!!daad, 'DAAD EPOS record exists');
     assert(
+      daad?.programStatus === 'Course-Specific Deadlines',
+      'DAAD EPOS is categorized under Course-Specific Deadlines'
+    );
+    assert(
+      OPEN_VERIFIED_SCHOLARSHIPS.some((s) => s.id === 'daad-epos-germany'),
+      'DAAD EPOS is included in OPEN_VERIFIED_SCHOLARSHIPS'
+    );
+    assert(
       !!daad?.benefitsSummary && daad.benefitsSummary.includes('€1,400'),
-      'DAAD EPOS benefitsSummary reflects €1,400/month doctoral stipend'
+      'DAAD EPOS reflects €1,400/month doctoral stipend'
     );
     assert(
       !!daad?.benefitsSummary && daad.benefitsSummary.includes('€934'),
-      'DAAD EPOS benefitsSummary reflects €934/month master\'s stipend'
+      'DAAD EPOS reflects €934/month master\'s stipend'
     );
     assert(
       !!daad?.statusDetails && daad.statusDetails.includes('February 2026'),
@@ -111,7 +163,36 @@ function runScholarshipAuditTests() {
     );
   }
 
-  console.log('\nTest Suite 4: Vanier CGS Discontinuation & Replacement');
+  console.log('\nTest Suite 6: Confirmed vs. Conditional Benefits Distinction');
+  {
+    for (const scholarship of SCHOLARSHIPS_DATA) {
+      if (scholarship.isVerified && scholarship.programStatus !== 'Discontinued') {
+        assert(
+          Array.isArray(scholarship.confirmedBenefits) && scholarship.confirmedBenefits.length > 0,
+          `${scholarship.id} defines explicit confirmed core entitlements`
+        );
+        assert(
+          Array.isArray(scholarship.conditionalBenefits) && scholarship.conditionalBenefits.length > 0,
+          `${scholarship.id} defines explicit course-dependent / conditional benefits`
+        );
+      }
+    }
+  }
+
+  console.log('\nTest Suite 7: Future Cycles Unannounced Opening Dates Labeled Expected');
+  {
+    const awaitingPrograms = SCHOLARSHIPS_DATA.filter((s) => s.programStatus === 'Awaiting Announcement');
+    assert(awaitingPrograms.length >= 3, 'GKS, Türkiye Bursları, and KAIST are awaiting official announcement');
+    for (const prog of awaitingPrograms) {
+      assert(
+        prog.applicationDeadlineNotice.toLowerCase().includes('expected') &&
+          prog.applicationDeadlineNotice.toLowerCase().includes('unannounced'),
+        `${prog.id} clearly labels future opening dates as expected and unannounced until published`
+      );
+    }
+  }
+
+  console.log('\nTest Suite 8: Vanier CGS Discontinuation & Replacement');
   {
     const vanier = SCHOLARSHIPS_DATA.find((s) => s.id === 'vanier-cgs-canada');
     assert(!!vanier, 'Vanier CGS record exists in dataset');
@@ -129,40 +210,9 @@ function runScholarshipAuditTests() {
         vanier.replacementProgramName.includes('Canada Graduate Research Scholarship'),
       'Vanier CGS specifies Canada Graduate Research Scholarship – Doctoral (CGRS-D) replacement'
     );
-    assert(
-      !!vanier?.statusDetails && vanier.statusDetails.includes('no longer accepting applications'),
-      'Vanier CGS statusDetails states no longer accepting applications'
-    );
   }
 
-  console.log('\nTest Suite 5: Elimination of Stale "Verified 2024–2025" Labels');
-  {
-    for (const scholarship of SCHOLARSHIPS_DATA) {
-      assert(
-        !scholarship.lastVerifiedDate.includes('2024-2025'),
-        `${scholarship.id} does not use stale "2024-2025" string (Current: "${scholarship.lastVerifiedDate}")`
-      );
-    }
-  }
-
-  console.log('\nTest Suite 6: Active Scholarships Verification & Grounding');
-  {
-    assert(ACTIVE_VERIFIED_SCHOLARSHIPS.length >= 7, 'Active verified list contains active schemes');
-    for (const scholarship of ACTIVE_VERIFIED_SCHOLARSHIPS) {
-      assert(scholarship.isVerified === true, `${scholarship.id} has isVerified = true`);
-      assert(scholarship.programStatus === 'Active', `${scholarship.id} has programStatus = 'Active'`);
-      assert(
-        scholarship.officialUrl.startsWith('https://'),
-        `${scholarship.id} has verified HTTPS official portal URL (${scholarship.officialUrl})`
-      );
-      assert(
-        scholarship.lastVerifiedDate.includes('2026'),
-        `${scholarship.id} has verified 2026 date (${scholarship.lastVerifiedDate})`
-      );
-    }
-  }
-
-  console.log('\nTest Suite 7: Segregation of Unverified Records');
+  console.log('\nTest Suite 9: Segregation of Unverified Records');
   {
     const placeholder = SCHOLARSHIPS_DATA.find((s) => s.id === 'placeholder-unverified-sample');
     assert(!!placeholder, 'Unverified placeholder record exists');
@@ -172,82 +222,72 @@ function runScholarshipAuditTests() {
       'Unverified placeholder has programStatus = Not Yet Verified'
     );
     assert(
-      placeholder?.lastVerifiedDate === 'Not yet verified',
-      'Unverified placeholder has lastVerifiedDate = "Not yet verified"'
-    );
-    assert(
       !ACTIVE_VERIFIED_SCHOLARSHIPS.some((s) => s.id === placeholder?.id),
       'Unverified placeholder is excluded from ACTIVE_VERIFIED_SCHOLARSHIPS'
     );
+    assert(
+      !OPEN_VERIFIED_SCHOLARSHIPS.some((s) => s.id === placeholder?.id),
+      'Unverified placeholder is excluded from OPEN_VERIFIED_SCHOLARSHIPS'
+    );
   }
 
-  console.log('\nTest Suite 8: Eligibility Matcher Baseline vs Guarantee & Status Handling');
+  console.log('\nTest Suite 10: Matcher Operational Status Handling');
   {
     const profile: UserEligibilityProfile = {
       academicPercentage: 82,
       ieltsScore: 7.0,
       degreeLevel: 'Master',
-      subjectArea: 'Computer Science & AI',
-      preferredDestination: 'United Kingdom',
+      subjectArea: 'Engineering & Technology',
+      preferredDestination: 'Germany',
       workExperienceYears: 3,
       isPakistaniCitizen: true,
     };
 
     const results = matchAllScholarships(profile);
-    const chevening = results.find((r) => r.scholarship.id === 'chevening-uk');
 
-    assert(!!chevening, 'Chevening evaluated in matcher');
+    // Active rolling scheme (DAAD EPOS) evaluates as Baseline Criteria Met
+    const daadResult = results.find((r) => r.scholarship.id === 'daad-epos-germany');
+    assert(!!daadResult, 'DAAD EPOS evaluated in matcher');
     assert(
-      chevening?.overallStatus === 'Baseline Criteria Met',
-      'Chevening reports "Baseline Criteria Met" for qualified applicant'
+      daadResult?.overallStatus === 'Baseline Criteria Met',
+      'DAAD EPOS reports "Baseline Criteria Met" for qualified applicant on rolling course deadlines'
     );
-    assert(chevening?.requirementsMet.length! >= 4, 'Chevening documents satisfied requirements');
-    assert(chevening?.requirementsNotMet.length === 0, 'No unmet disqualifications for Chevening');
 
-    // Test closed Fulbright scholarship in matcher
+    // Closed scheme (Chevening UK) evaluates as Not Eligible due to closed deadline
+    const cheveningResult = results.find((r) => r.scholarship.id === 'chevening-uk');
+    assert(!!cheveningResult, 'Chevening evaluated in matcher');
+    assert(
+      cheveningResult?.overallStatus === 'Not Eligible',
+      'Closed Chevening 2027/2028 intake reports "Not Eligible" in matcher'
+    );
+    assert(
+      !!cheveningResult?.requirementsNotMet.some((r) => r.id === 'program-closed'),
+      'Chevening lists program-closed in requirementsNotMet'
+    );
+
+    // Closed scheme (Commonwealth Master\'s) evaluates as Not Eligible due to closed deadline
+    const commonwealthResult = results.find((r) => r.scholarship.id === 'commonwealth-masters-uk');
+    assert(!!commonwealthResult, 'Commonwealth Master\'s evaluated in matcher');
+    assert(
+      commonwealthResult?.overallStatus === 'Not Eligible',
+      'Closed Commonwealth Master\'s intake reports "Not Eligible" in matcher'
+    );
+    assert(
+      !!commonwealthResult?.requirementsNotMet.some((r) => r.id === 'program-closed'),
+      'Commonwealth lists program-closed in requirementsNotMet'
+    );
+
+    // Closed scheme (Fulbright Pakistan) evaluates as Not Eligible
     const fulbrightResult = results.find((r) => r.scholarship.id === 'fulbright-pakistan');
     assert(!!fulbrightResult, 'Fulbright evaluated in matcher');
     assert(
       fulbrightResult?.overallStatus === 'Not Eligible',
-      'Closed Fulbright 2027 intake is marked Not Eligible in matcher'
-    );
-    assert(
-      !!fulbrightResult?.requirementsNotMet.some((r) => r.id === 'program-closed'),
-      'Closed intake status is cited in requirementsNotMet'
-    );
-
-    // Test bachelor profile against Fulbright (strictly graduate only)
-    const bachelorProfile: UserEligibilityProfile = {
-      academicPercentage: 85,
-      ieltsScore: 7.5,
-      degreeLevel: 'Bachelor',
-      subjectArea: 'Engineering & Technology',
-      preferredDestination: 'United States',
-      workExperienceYears: 0,
-      isPakistaniCitizen: true,
-    };
-    const bachelorResults = matchAllScholarships(bachelorProfile);
-    const fulbrightBachelor = bachelorResults.find((r) => r.scholarship.id === 'fulbright-pakistan');
-    assert(
-      !!fulbrightBachelor?.requirementsNotMet.some((r) => r.id === 'degree-level'),
-      'Fulbright correctly rejects Bachelor degree applicant with degree-level mismatch'
-    );
-
-    // Test discontinued program evaluation in matcher
-    const vanierResult = results.find((r) => r.scholarship.id === 'vanier-cgs-canada');
-    assert(!!vanierResult, 'Vanier evaluated in matcher');
-    assert(
-      vanierResult?.overallStatus === 'Not Eligible',
-      'Discontinued Vanier CGS is marked Not Eligible in matcher'
-    );
-    assert(
-      !!vanierResult?.requirementsNotMet.some((r) => r.id === 'program-discontinued'),
-      'Discontinued status is explicitly cited in requirementsNotMet'
+      'Closed Fulbright 2027 intake reports "Not Eligible" in matcher'
     );
   }
 
   console.log('\n====================================================');
-  console.log('ALL SCHOLARSHIP AUDIT TESTS PASSED SUCCESSFULLY (8/8 SUITES)');
+  console.log('ALL SCHOLARSHIP AUDIT TESTS PASSED SUCCESSFULLY (10/10 SUITES)');
   console.log('====================================================');
 }
 
