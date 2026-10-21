@@ -226,10 +226,21 @@ function runCountryComparisonTests() {
         country.officialLinks.length >= 2,
         `${country.name} provides official government portals`
       );
-      assert(
-        country.statutoryAnnualLivingProof > 0,
-        `${country.name} has non-zero statutory annual living proof`
-      );
+      if (country.visaRequirementType === 'fixed_benchmark') {
+        assert(
+          typeof country.statutoryAnnualLivingProof === 'number' && country.statutoryAnnualLivingProof > 0,
+          `${country.name} has non-zero statutory annual living proof`
+        );
+      } else {
+        assert(
+          country.statutoryAnnualLivingProof === null,
+          `${country.name} has null statutoryAnnualLivingProof (distinguishing variable/institution-specific from statutory thresholds)`
+        );
+        assert(
+          typeof country.illustrativeLivingBenchmark === 'number' && country.illustrativeLivingBenchmark > 0,
+          `${country.name} defines an illustrative living benchmark`
+        );
+      }
       assert(
         country.typicalLivingMax >= country.typicalLivingMin,
         `${country.name} estimated actual living range is valid`
@@ -289,6 +300,7 @@ function runCountryComparisonTests() {
     };
 
     for (const country of COUNTRIES_DATA) {
+      const livingAmount = country.statutoryAnnualLivingProof ?? country.typicalLivingMin;
       const input = {
         homeCountry: 'Pakistan',
         homeCurrency: 'PKR',
@@ -298,7 +310,7 @@ function runCountryComparisonTests() {
         exchangeRateToPKR: country.defaultExchangeRateToPKR,
         studyDurationYears: 2,
         annualTuition: country.typicalTuitionMin,
-        annualLiving: country.statutoryAnnualLivingProof,
+        annualLiving: livingAmount,
         annualInsurance: country.currencyCode === 'KRW' ? 800000 : 1000,
         annualSemesterFees: country.currencyCode === 'KRW' ? 400000 : 500,
         oneTimeExpenses: 450000,
@@ -311,7 +323,7 @@ function runCountryComparisonTests() {
       // Ensure that calculating totals does not produce NaN or infinite values
       const annualTotalForeign =
         country.typicalTuitionMin +
-        country.statutoryAnnualLivingProof +
+        livingAmount +
         (country.currencyCode === 'KRW' ? 800000 : 1000) +
         (country.currencyCode === 'KRW' ? 400000 : 500);
       const annualTotalBase = annualTotalForeign * country.defaultExchangeRateToPKR;

@@ -141,7 +141,9 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
 
                 <div className="space-y-3.5">
                   {COUNTRIES_DATA.slice(0, 4).map((c) => {
-                    const sampleFirstYearPKR = (c.typicalTuitionMin + c.statutoryAnnualLivingProof) * c.defaultExchangeRateToPKR + 450000;
+                    const tuitionBaseline = c.id === 'south-korea' ? 5400000 : c.typicalTuitionMin;
+                    const livingBaseline = c.typicalLivingMin;
+                    const sampleFirstYearPKR = (tuitionBaseline + livingBaseline) * c.defaultExchangeRateToPKR + 450000;
                     return (
                       <a
                         key={c.id}
@@ -159,7 +161,15 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                               {c.name}
                             </span>
                             <span className="text-xs text-slate-500 block">
-                              Living Proof: {c.currencySymbol} {c.statutoryAnnualLivingProof.toLocaleString()} /yr
+                              {c.visaRequirementType === 'institution_specific' ? (
+                                'Visa Proof: Form I-20 COA'
+                              ) : c.visaRequirementType === 'variable_regional' ? (
+                                'Visa Proof: CoA-Dependent (~₩20M)'
+                              ) : c.statutoryAnnualLivingProof !== null ? (
+                                `Visa Proof: ${c.currencySymbol} ${c.statutoryAnnualLivingProof.toLocaleString()} /yr`
+                              ) : (
+                                'Visa Proof: Variable'
+                              )}
                             </span>
                           </div>
                         </div>

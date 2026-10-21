@@ -71,8 +71,9 @@ export const COUNTRIES_DATA: Country[] = [
     typicalLivingMin: 9600000, // ₩800,000/mo = ₩9,600,000 KRW/yr
     typicalLivingMax: 15600000, // ₩1,300,000/mo = ₩15,600,000 KRW/yr
     officialProofOfFundsRequirement: 'D-2 Student Visa bank balance requirements are determined based on the applicant’s Certificate of Admission (CoA). The Embassy of the Republic of Korea in Pakistan asks applicants to demonstrate funds sufficient for the costs stated on their admission documentation. While Ministry of Justice guidelines set illustrative regional benchmarks (typically ₩16,000,000 to ₩20,000,000 KRW for universities in the Seoul Metropolitan Area, and ₩14,000,000 to ₩18,000,000 KRW for universities outside Seoul), requirements vary by institution, location, applicant, and current embassy guidance. No single amount is universally applicable.',
-    statutoryAnnualLivingProof: 20000000, // Seoul illustrative benchmark in KRW
-    statutoryProofDetails: 'Illustrative regional benchmark: ₩20,000,000 KRW. At stated rate of 1 KRW = 0.208 PKR: ₩20,000,000 × 0.208 = PKR 4,160,000. The Korean Embassy in Pakistan asks applicants to demonstrate funds sufficient for the costs stated on their Certificate of Admission (CoA); requirements vary by institution and campus location.',
+    statutoryAnnualLivingProof: null,
+    illustrativeLivingBenchmark: 20000000, // Illustrative Seoul benchmark in KRW
+    statutoryProofDetails: 'Variable and illustrative regional benchmark: ₩20,000,000 KRW. At stated rate of 1 KRW = 0.208 PKR: ₩20,000,000 × 0.208 = PKR 4,160,000. D-2 Student Visa bank balance requirements are determined based on the applicant’s Certificate of Admission (CoA). The Embassy of the Republic of Korea in Pakistan asks applicants to demonstrate funds sufficient for the costs stated on their admission documentation; requirements vary by institution, location, applicant, and current embassy guidance. No single amount is universally applicable.',
     visaProcessingWeeks: 'Variable estimates: typically 3 to 6 weeks at the Embassy of the Republic of Korea in Islamabad (checked October 2026)',
     partTimeWorkRights: 'Part-time work is NOT automatic. It requires formal S-3 Part-time Work Permission from the Korea Immigration Service and university endorsement. Permitted hours depend on degree level, academic standing, and Korean language proficiency (TOPIK): typically 10 to 25 hours per week during term for eligible students, unrestricted during vacations.',
     workRightsOfficialSource: 'Ministry of Justice (Korea Immigration Service) Regulations on Stay and Part-Time Work Permission for International Students (D-2).',
@@ -127,8 +128,9 @@ export const COUNTRIES_DATA: Country[] = [
     typicalLivingMin: 13000,
     typicalLivingMax: 22000,
     officialProofOfFundsRequirement: 'Form I-20 Cost of Attendance (COA): Under 8 CFR 214.2(f)(1)(i)(B), there is no universal federal dollar amount. Financial evidence must cover 100% of the first-year tuition, mandatory institutional fees, and estimated living expenses certified by the specific SEVP-approved school on Form I-20, net of verified scholarships or assistantships.',
-    statutoryAnnualLivingProof: 16000, // Illustrative institutional COA living component
-    statutoryProofDetails: 'Determined institution-by-institution on Form I-20 by the Designated School Official (DSO). Ranges from ~$12,000 to $25,000+ depending on campus location and housing type.',
+    statutoryAnnualLivingProof: null,
+    illustrativeLivingBenchmark: 16000, // Illustrative institutional COA living component
+    statutoryProofDetails: 'Institution-specific: Under 8 CFR 214.2(f)(1)(i)(B), there is no universal federal statutory dollar amount. Financial evidence is determined strictly institution-by-institution on Form I-20 Cost of Attendance (COA) certified by the Designated School Official (DSO). Institutional living expense estimates typically range from ~$12,000 to $25,000+ depending on campus location and housing type.',
     visaProcessingWeeks: 'Variable estimates: typically 4 to 12 weeks (subject to F-1 interview appointment slot availability at US Embassy Islamabad or Consulate Karachi; checked October 2026)',
     partTimeWorkRights: 'On-campus work is permitted up to 20 hours per week during academic terms (full-time during official school recesses) per 8 CFR 214.2(f)(9)(i). Off-campus work is strictly prohibited during the first academic year and requires prior specific authorization (CPT authorized by DSO, or OPT / severe economic hardship authorized with a USCIS Employment Authorization Document).',
     workRightsOfficialSource: '8 CFR 214.2(f)(9) - US Department of Homeland Security / USCIS F-1 Employment Regulations.',

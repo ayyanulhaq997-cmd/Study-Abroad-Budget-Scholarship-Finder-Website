@@ -50,7 +50,8 @@ export interface Country {
   typicalLivingMin: number; // actual estimated living
   typicalLivingMax: number;
   officialProofOfFundsRequirement: string;
-  statutoryAnnualLivingProof: number; // statutory baseline benchmark (e.g. Germany €11,904, Canada CAD $23,448)
+  statutoryAnnualLivingProof: number | null; // statutory baseline benchmark (e.g. Germany €11,904, Canada CAD $23,448). null for countries with institution-specific or variable requirements (e.g. USA, South Korea)
+  illustrativeLivingBenchmark?: number | null; // illustrative regional/institutional benchmark (e.g. USA $16,000, South Korea ₩20,000,000)
   statutoryLivingProofLondon?: number; // £13,761 for UK
   statutoryLivingProofNonLondon?: number; // £10,539 for UK
   statutoryProofDetails?: string;

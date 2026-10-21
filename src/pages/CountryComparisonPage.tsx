@@ -369,7 +369,7 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
                 </td>
                 {selectedCountries.map((c) => {
                   const rate = customRates[c.id] || c.defaultExchangeRateToPKR;
-                  const proofPKR = c.statutoryAnnualLivingProof * rate;
+                  const proofPKR = c.statutoryAnnualLivingProof !== null ? c.statutoryAnnualLivingProof * rate : null;
                   return (
                     <td key={c.id} className="py-3.5 px-4 border-l border-slate-200 space-y-1.5">
                       <div className="flex items-center gap-1.5 pb-0.5">
@@ -425,18 +425,21 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
                         <div className="space-y-2">
                           <div>
                             <span className="font-bold text-blue-900 block font-mono">
-                              ₩20,000,000 KRW (Illustrative benchmark)
+                              Certificate of Admission (CoA) Dependent
+                            </span>
+                            <span className="text-xs font-semibold text-amber-800 block">
+                              Illustrative Regional Benchmark: ~₩20,000,000 KRW
                             </span>
                             <span className="text-xs font-semibold text-slate-700 block font-mono">
                               ≈ {formatCurrency(20000000 * rate, 'PKR')}
                             </span>
                           </div>
                           <p className="text-[10px] text-slate-700 leading-snug">
-                            The Korean Embassy in Pakistan asks applicants to demonstrate funds sufficient for the costs stated on their Certificate of Admission (CoA); requirements vary by institution, location, applicant, and current embassy guidance.
+                            The Embassy of the Republic of Korea in Pakistan asks applicants to demonstrate funds sufficient for the costs stated on their Certificate of Admission (CoA); requirements vary by institution, location, applicant, and current embassy guidance.
                           </p>
                           <div className="p-2 rounded-lg bg-white border border-amber-300 text-[10px] text-amber-950 font-mono leading-tight space-y-0.5">
                             <div className="font-bold text-amber-900">Illustrative Combined Visa Readiness:</div>
-                            <div>Financial proof: {formatCurrency(Math.round(20000000 * rate), 'PKR')} (₩20M × {rate})</div>
+                            <div>Regional benchmark: {formatCurrency(Math.round(20000000 * rate), 'PKR')} (₩20M × {rate})</div>
                             <div>Illustrative tuition: {formatCurrency(Math.round(5400000 * rate), 'PKR')} (₩5.4M × {rate})</div>
                             <div>Pre-departure costs: PKR 450,000</div>
                             <div className="font-bold border-t border-amber-200 pt-0.5 text-blue-900">
@@ -476,11 +479,11 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
                           <span className="font-bold text-blue-900 block font-mono">
                             Certified on Form I-20 COA
                           </span>
-                          <span className="text-xs font-semibold text-slate-700 block font-mono">
-                            Illustrative Living Component: ~$16,000 (≈ {formatCurrency(proofPKR, 'PKR')})
+                          <span className="text-xs font-semibold text-purple-900 block">
+                            No universal federal minimum (Institution-Specific)
                           </span>
                           <p className="text-[10px] text-slate-600 leading-tight">
-                            8 CFR 214.2(f)(1)(i)(B). No universal federal dollar amount. Institution certifies exact first-year COA net of awarded assistantships/scholarships.
+                            8 CFR 214.2(f)(1)(i)(B). No universal federal statutory dollar threshold. Financial proof is strictly determined institution-by-institution on Form I-20 (Cost of Attendance) certified by the Designated School Official (DSO), net of verified scholarships or assistantships. Campus living estimates typically range ~$12,000–$25,000+/year.
                           </p>
                         </div>
                       )}
@@ -576,7 +579,7 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
               <tr>
                 <td className="py-3.5 px-4 font-semibold text-slate-800 bg-slate-50/50">
                   Verified Official Portals
-                  <span className="text-[10px] text-slate-500 block font-normal">Last verified: October 21, 2026</span>
+                  <span className="text-[10px] text-slate-500 block font-normal">Independently verified against official government portals</span>
                 </td>
                 {selectedCountries.map((c) => (
                   <td key={c.id} className="py-3.5 px-4 border-l border-slate-200 space-y-2">
@@ -585,7 +588,7 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
                         <ShieldCheck className="w-3 h-3 text-emerald-600" />
                         <span>Grounded Source</span>
                       </span>
-                      <span className="font-mono text-[10px]">{c.lastVerifiedDate}</span>
+                      <span className="font-mono text-[10px]">{c.verification?.checkedAt || c.lastVerifiedDate}</span>
                     </div>
 
                     <div className="space-y-1">
@@ -644,7 +647,7 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
             const livingBaseline = c.typicalLivingMin;
             const preDeparture = 450000;
             const firstYearExpensePKR = (tuitionBaseline + livingBaseline) * rate + preDeparture;
-            const proofPKR = c.statutoryAnnualLivingProof * rate;
+            const proofPKR = c.statutoryAnnualLivingProof !== null ? c.statutoryAnnualLivingProof * rate : null;
 
             return (
               <div
@@ -673,10 +676,20 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
                         ≈ {formatCurrency(firstYearExpensePKR, 'PKR')}
                       </span>
                     </div>
-                    <div className="flex justify-between items-center text-slate-600 border-t border-slate-200/60 pt-1.5">
-                      <span className="font-semibold text-slate-700">Visa Proof Benchmark:</span>
-                      <span className="font-bold text-blue-700 font-mono">
-                        {c.currencySymbol} {c.statutoryAnnualLivingProof.toLocaleString()} (≈ {formatCurrency(proofPKR, 'PKR')})
+                    <div className="flex justify-between items-start text-slate-600 border-t border-slate-200/60 pt-1.5">
+                      <span className="font-semibold text-slate-700">Visa Proof:</span>
+                      <span className="font-bold text-blue-700 font-mono text-right text-xs">
+                        {c.visaRequirementType === 'institution_specific' ? (
+                          <span className="text-purple-800">Form I-20 COA (Institution-Specific)</span>
+                        ) : c.visaRequirementType === 'variable_regional' ? (
+                          <span className="text-amber-800">CoA-Dependent (~₩20M Seoul Benchmark)</span>
+                        ) : c.statutoryAnnualLivingProof !== null ? (
+                          <span>
+                            {c.currencySymbol} {c.statutoryAnnualLivingProof.toLocaleString()} (≈ {formatCurrency(proofPKR, 'PKR')})
+                          </span>
+                        ) : (
+                          <span>Variable</span>
+                        )}
                       </span>
                     </div>
                     <div className="flex justify-between text-slate-600">

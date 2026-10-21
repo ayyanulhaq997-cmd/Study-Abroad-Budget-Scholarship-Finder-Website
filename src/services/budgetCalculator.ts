@@ -307,14 +307,17 @@ export function calculateBudget(
 
   // 7. Core Rule 6: Separate Visa Financial Proof (evidence of funds, NOT added to degree cost)
   const hasVerifiedVisaProofRequirement = Boolean(
-    countryData && countryData.statutoryAnnualLivingProof && countryData.statutoryAnnualLivingProof > 0
+    countryData &&
+      countryData.statutoryAnnualLivingProof !== null &&
+      countryData.statutoryAnnualLivingProof !== undefined &&
+      countryData.statutoryAnnualLivingProof > 0
   );
-  const statutoryAnnualLivingProofForeign = hasVerifiedVisaProofRequirement
-    ? countryData!.statutoryAnnualLivingProof
+  const statutoryAnnualLivingProofForeign = hasVerifiedVisaProofRequirement && countryData?.statutoryAnnualLivingProof !== null
+    ? countryData!.statutoryAnnualLivingProof!
     : null;
   const statutoryAnnualLivingProofBase =
-    hasVerifiedVisaProofRequirement && isExchangeRateValid && exchangeRateUsed
-      ? countryData!.statutoryAnnualLivingProof * exchangeRateUsed
+    hasVerifiedVisaProofRequirement && isExchangeRateValid && exchangeRateUsed && countryData?.statutoryAnnualLivingProof != null
+      ? countryData.statutoryAnnualLivingProof * exchangeRateUsed
       : null;
   const statutoryProofDescription = hasVerifiedVisaProofRequirement
     ? countryData!.officialProofOfFundsRequirement
@@ -566,7 +569,7 @@ export function getPresetInput(presetId: string): BudgetInput {
         isExchangeRateUserProvided: false,
         studyDurationYears: 1, // 1-Year UK Master's
         annualTuition: 19500,
-        annualLiving: 12006, // UKVI outside London living requirement
+        annualLiving: 10539, // UKVI outside London living statutory benchmark (£1,171/mo × 9)
         annualInsurance: 776, // Immigration Health Surcharge (IHS) £776/yr
         annualSemesterFees: 800,
         oneTimeExpenses: 630000,
@@ -591,7 +594,7 @@ export function getPresetInput(presetId: string): BudgetInput {
         isExchangeRateUserProvided: false,
         studyDurationYears: 2,
         annualTuition: 21000,
-        annualLiving: 20635, // Mandatory IRCC living proof standard
+        annualLiving: 23448, // IRCC statutory living-funds threshold (effective 1 Sept 2026 outside Quebec)
         annualInsurance: 950,
         annualSemesterFees: 1000,
         oneTimeExpenses: 590000,
@@ -615,8 +618,8 @@ export function getPresetInput(presetId: string): BudgetInput {
         exchangeRateToPKR: 0.208,
         isExchangeRateUserProvided: false,
         studyDurationYears: 2,
-        annualTuition: 5400000, // ₩5,400,000 KRW (≈ PKR 1,120,000 / $4,000 USD)
-        annualLiving: 21500000, // ₩21,500,000 KRW (≈ PKR 4,472,000 / $16,000 USD)
+        annualTuition: 5400000, // ₩5,400,000 KRW (≈ PKR 1,123,200 at 0.208)
+        annualLiving: 9600000, // ₩9,600,000 KRW typical living (₩800k/mo); visa proof is CoA-dependent
         annualInsurance: 800000,
         annualSemesterFees: 400000,
         oneTimeExpenses: 450000,

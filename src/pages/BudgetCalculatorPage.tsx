@@ -237,6 +237,7 @@ export const BudgetCalculatorPage: React.FC = () => {
   // Visa documentation notice (for countries with a fixed statutory living benchmark)
   const isBelowStatutoryLivingProof =
     activeCountry.visaRequirementType === 'fixed_benchmark' &&
+    activeCountry.statutoryAnnualLivingProof !== null &&
     activeCountry.statutoryAnnualLivingProof > 0 &&
     input.expenseCurrency === activeCountry.currencyCode &&
     input.annualLiving < activeCountry.statutoryAnnualLivingProof;
@@ -611,7 +612,7 @@ export const BudgetCalculatorPage: React.FC = () => {
                   <div>
                     <span className="font-bold">Visa Financial Benchmark Context: </span>
                     {activeCountry.name} sets an official visa financial proof threshold of {activeCountry.currencySymbol}{' '}
-                    {activeCountry.statutoryAnnualLivingProof.toLocaleString()}/yr ({activeCountry.officialProofOfFundsRequirement}). This threshold is immigration evidence of available funds for visa issuance—not a mandate for what your actual annual spending must be. Your day-to-day living expenses may vary by city and lifestyle.
+                    {activeCountry.statutoryAnnualLivingProof?.toLocaleString()}/yr ({activeCountry.officialProofOfFundsRequirement}). This threshold is immigration evidence of available funds for visa issuance—not a mandate for what your actual annual spending must be. Your day-to-day living expenses may vary by city and lifestyle.
                   </div>
                 </div>
               )}
