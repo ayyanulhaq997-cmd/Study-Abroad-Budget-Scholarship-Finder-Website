@@ -103,8 +103,69 @@ function runUniversityFeesAuditTests() {
     );
   }
 
+  console.log('\nTest Suite 4: University Structured VerificationRecord Metadata');
+  {
+    for (const uni of UNIVERSITIES_DATA) {
+      assert(
+        Boolean(uni.verification),
+        `${uni.name} includes structured verification record`
+      );
+      assert(
+        uni.verification?.status === 'verified',
+        `${uni.name} verification status is 'verified'`
+      );
+      assert(
+        Boolean(uni.verification?.sourceUrl.startsWith('https://')),
+        `${uni.name} verification sourceUrl is an HTTPS link (${uni.verification?.sourceUrl})`
+      );
+      assert(
+        Boolean(uni.verification?.applicableCycle && uni.verification.applicableCycle.length > 5),
+        `${uni.name} verification defines applicable admission/fee cycle`
+      );
+      assert(
+        Boolean(uni.verification?.scope && uni.verification.scope.length > 5),
+        `${uni.name} verification defines specific program/faculty scope`
+      );
+      assert(
+        Boolean(uni.verification?.checkedAt && uni.verification.checkedAt.includes('2026')),
+        `${uni.name} verification checkedAt date is documented in 2026`
+      );
+    }
+  }
+
+  console.log('\nTest Suite 5: Fee Range Bounds & Manchester MSc Advanced CS Specific Rate');
+  {
+    for (const uni of UNIVERSITIES_DATA) {
+      if (uni.typicalAnnualTuitionMin !== null && uni.typicalAnnualTuitionMax !== null) {
+        assert(
+          uni.typicalAnnualTuitionMax >= uni.typicalAnnualTuitionMin,
+          `${uni.name} tuition max (${uni.typicalAnnualTuitionMax}) is >= min (${uni.typicalAnnualTuitionMin})`
+        );
+        assert(
+          uni.typicalAnnualTuitionMin >= 0,
+          `${uni.name} tuition min is non-negative`
+        );
+      }
+      assert(
+        uni.estimatedCityLivingAnnual > 0,
+        `${uni.name} estimated city living cost is positive`
+      );
+    }
+
+    // Specific check for Manchester MSc Advanced Computer Science: £39,400 (Sept 2026) / £41,400 (Sept 2027)
+    const manchester = UNIVERSITIES_DATA.find((u) => u.id === 'manchester-uk');
+    assert(
+      manchester?.typicalAnnualTuitionMin === 39400,
+      'Manchester MSc Advanced Computer Science tuition min is £39,400 (September 2026 entry)'
+    );
+    assert(
+      manchester?.typicalAnnualTuitionMax === 41400,
+      'Manchester MSc Advanced Computer Science tuition max is £41,400 (September 2027 entry)'
+    );
+  }
+
   console.log('\n====================================================');
-  console.log('ALL UNIVERSITY FEES AUDIT TESTS PASSED (3/3 SUITES)');
+  console.log('ALL UNIVERSITY FEES AUDIT TESTS PASSED (5/5 SUITES)');
   console.log('====================================================');
 }
 

@@ -48,6 +48,14 @@ export const COUNTRIES_DATA: Country[] = [
     notes: 'Simplified public-university estimate: €0–€3,000/yr. Most German public universities in 15 of 16 federal states charge €0 tuition (only a mandatory semester fee of €150–€400/semester covering student services and transit). Exceptions exist: Baden-Württemberg statutorily charges €1,500/semester (€3,000/yr) for non-EU students; Technical University of Munich (TUM) charges non-EU international tuition of €4,000–€12,000/yr for master’s programs in CIT/Engineering; and private universities set independent fee scales.',
     lastVerifiedDate: 'October 21, 2026',
     officialSourceUrl: 'https://www.make-it-in-germany.com/en/study-training/studies-in-germany',
+    visaRequirementType: 'fixed_benchmark',
+    verification: {
+      sourceUrl: 'https://www.make-it-in-germany.com/en/study-training/studies-in-germany',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2026/2027 Academic Year',
+      scope: 'Federal statutory Sperrkonto benchmark (€11,904/yr) & AufenthG Section 16b/20 regulations',
+      status: 'verified',
+    },
   },
   {
     id: 'south-korea',
@@ -96,6 +104,14 @@ export const COUNTRIES_DATA: Country[] = [
     notes: 'Korean tuition and living costs are originally billed in KRW. Converted amounts to PKR use explicit exchange rates (stated illustrative rate: 1 KRW = 0.208 PKR). Illustrative visa financial-readiness calculation: PKR 4,160,000 (stated financial proof: ₩20,000,000 × 0.208) + PKR 1,123,200 (illustrative annual tuition: ₩5,400,000 × 0.208) + PKR 450,000 (Pre-departure Costs) = PKR 5,733,200. Note: This adds the stated financial-proof threshold, tuition and pre-departure costs. It is not an all-in expense estimate because the financial-proof amount is not an additional living expense.',
     lastVerifiedDate: 'October 21, 2026',
     officialSourceUrl: 'https://www.studyinkorea.go.kr',
+    visaRequirementType: 'variable_regional',
+    verification: {
+      sourceUrl: 'https://overseas.mofa.go.kr/pk-en/index.do',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2026/2027 Academic Year',
+      scope: 'CoA-dependent financial evidence, D-2 / D-10 regulations via HiKorea & Korean Embassy Islamabad',
+      status: 'verified',
+    },
   },
   {
     id: 'usa',
@@ -139,6 +155,14 @@ export const COUNTRIES_DATA: Country[] = [
     notes: 'No universal federal bank requirement exists for the US F-1 student visa. The amount is determined strictly by the certified institution on Form I-20. Graduate assistantships (RA/TA) at research universities frequently waive 100% of tuition and provide a monthly living stipend. F-1 applicants must demonstrate non-immigrant intent.',
     lastVerifiedDate: 'October 21, 2026',
     officialSourceUrl: 'https://studyinthestates.dhs.gov',
+    visaRequirementType: 'institution_specific',
+    verification: {
+      sourceUrl: 'https://studyinthestates.dhs.gov',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2026/2027 Academic Year',
+      scope: 'SEVP Form I-20 Cost of Attendance (8 CFR 214.2(f)), DSO institution-specific certification',
+      status: 'verified',
+    },
   },
   {
     id: 'canada',
@@ -177,6 +201,14 @@ export const COUNTRIES_DATA: Country[] = [
     notes: 'Provincial/Territorial Attestation Letters (PAL/TAL) are required for most undergraduate study permit applications under federal enrollment caps, but exemptions exist (including master’s and doctoral degree applicants, visiting/exchange students, and study permit extensions). Applicants must check eligibility for their specific program.',
     lastVerifiedDate: 'October 21, 2026',
     officialSourceUrl: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada.html',
+    visaRequirementType: 'fixed_benchmark',
+    verification: {
+      sourceUrl: 'https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada.html',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: 'Applications on/after 1 September 2026',
+      scope: 'IRCC single-applicant financial benchmark outside Quebec (CAD $23,448) & 24h work limit',
+      status: 'verified',
+    },
   },
   {
     id: 'uk',
@@ -227,6 +259,14 @@ export const COUNTRIES_DATA: Country[] = [
     notes: 'Most UK Master’s degrees are completed in 1 calendar year (12 months), reducing overall tuition and living expenses compared to 2-year programs in other destinations. Financial maintenance funds must strictly satisfy the 28-day rule.',
     lastVerifiedDate: 'October 21, 2026',
     officialSourceUrl: 'https://www.gov.uk/student-visa',
+    visaRequirementType: 'fixed_benchmark',
+    verification: {
+      sourceUrl: 'https://www.gov.uk/student-visa',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2026 Entry & 2027 Immigration Rules',
+      scope: 'UKVI maintenance (£13,761 London / £10,539 outside London, 28-day rule) & Graduate Route dates',
+      status: 'verified',
+    },
   },
   {
     id: 'australia',
@@ -265,5 +305,13 @@ export const COUNTRIES_DATA: Country[] = [
     notes: 'Australia assesses student visa applications under the Genuine Student (GS) requirement. Applicants must prove genuine access to funds held in their name or eligible sponsors.',
     lastVerifiedDate: 'October 21, 2026',
     officialSourceUrl: 'https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500',
+    visaRequirementType: 'fixed_benchmark',
+    verification: {
+      sourceUrl: 'https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2026/2027 Academic Year',
+      scope: 'Department of Home Affairs Subclass 500 capacity (AUD $29,710), Condition 8105, & Subclass 485 rules',
+      status: 'verified',
+    },
   },
 ];

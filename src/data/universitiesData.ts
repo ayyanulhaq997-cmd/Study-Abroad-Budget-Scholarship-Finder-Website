@@ -41,6 +41,13 @@ export const UNIVERSITIES_DATA: University[] = [
     admissionRequirementsSummary: 'Requires recognized 4-year Bachelor in Informatics or equivalent quantitative field, Aptitude Assessment (Eignungsverfahren), curricular analysis via VPD (uni-assist), GRE score strongly recommended for non-EU applicants, and English proficiency (IELTS 6.5+ or TOEFL iBT 88+).',
     officialAdmissionsUrl: 'https://www.tum.de/en/studies/application',
     lastVerifiedDate: 'October 21, 2026',
+    verification: {
+      sourceUrl: 'https://www.tum.de/en/studies/fees-and-financial-aid/tuition-fees',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2025/2026 & 2026/2027 Academic Years',
+      scope: 'School of Computation, Information and Technology (CIT) & Engineering non-EU fee schedule',
+      status: 'verified',
+    },
   },
   {
     id: 'heidelberg-germany',
@@ -78,6 +85,13 @@ export const UNIVERSITIES_DATA: University[] = [
     admissionRequirementsSummary: 'Requires recognized Bachelor of Science in Mathematics, Computer Science, or Natural Sciences with extensive mathematical foundation (equivalent to 2.5 or better on German scale) and English language certificate (IELTS Academic 6.5+ or TOEFL iBT 90+).',
     officialAdmissionsUrl: 'https://www.uni-heidelberg.de/en/study/international-students',
     lastVerifiedDate: 'October 21, 2026',
+    verification: {
+      sourceUrl: 'https://www.uni-heidelberg.de/en/study/management-studies/tuition-fees',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2025/2026 & 2026/2027 Academic Years',
+      scope: 'State of Baden-Württemberg statutory non-EU fee schedule (€1,500/semester)',
+      status: 'verified',
+    },
   },
   {
     id: 'kaist-korea',
@@ -114,6 +128,13 @@ export const UNIVERSITIES_DATA: University[] = [
     admissionRequirementsSummary: 'Requires accredited 4-year Bachelor’s in STEM or quantitative discipline, verified academic transcripts, statement of purpose, 2 academic recommendation letters, and English proficiency (IELTS 6.5+ or TOEFL iBT 83+).',
     officialAdmissionsUrl: 'https://admission.kaist.ac.kr/graduate/intl',
     lastVerifiedDate: 'October 21, 2026',
+    verification: {
+      sourceUrl: 'https://admission.kaist.ac.kr/graduate/intl/scholarships',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2025/2026 Published Rates (2026/2027 Official Release Pending)',
+      scope: 'KAIST Graduate School of Computing full tuition waiver & living allowance structure',
+      status: 'verified',
+    },
   },
   {
     id: 'snu-korea',
@@ -151,6 +172,13 @@ export const UNIVERSITIES_DATA: University[] = [
     admissionRequirementsSummary: 'International Admissions I (both applicant and parents hold non-Korean nationality); recognized Bachelor’s degree in computing or engineering; English proficiency (TOEFL iBT 80+, IELTS Academic 6.0+, or TEPS 298+).',
     officialAdmissionsUrl: 'https://en.snu.ac.kr/admission',
     lastVerifiedDate: 'October 21, 2026',
+    verification: {
+      sourceUrl: 'https://en.snu.ac.kr/admission/graduate/fees',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2025/2026 Published Schedule (2026/2027 Pending)',
+      scope: 'College of Engineering Graduate Division tuition fee schedule and living benchmarks',
+      status: 'verified',
+    },
   },
   {
     id: 'uiuc-usa',
@@ -186,6 +214,13 @@ export const UNIVERSITIES_DATA: University[] = [
     admissionRequirementsSummary: 'Requires 4-year undergraduate degree in computer science or related quantitative discipline with minimum 3.2/4.0 CGPA (3.5+ competitive for research tracks), 3 letters of recommendation, statement of purpose, and IELTS Academic 7.5+ or TOEFL iBT 103+ for teaching assistantship appointment eligibility.',
     officialAdmissionsUrl: 'https://grad.illinois.edu/admissions',
     lastVerifiedDate: 'October 21, 2026',
+    verification: {
+      sourceUrl: 'https://cost.illinois.edu/',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2026/2027 Academic Year',
+      scope: 'Grainger College of Engineering Graduate tuition & TA/RA assistantship waiver rules',
+      status: 'verified',
+    },
   },
   {
     id: 'ut-austin-usa',
@@ -221,6 +256,13 @@ export const UNIVERSITIES_DATA: University[] = [
     admissionRequirementsSummary: 'Upper-division undergraduate GPA minimum of 3.0 on a 4.0 scale (admitted MS/PhD students typically average 3.6+), verified transcripts, 3 letters of reference, statement of purpose, and IELTS Academic 6.5+ or TOEFL iBT 79+.',
     officialAdmissionsUrl: 'https://gradschool.utexas.edu/admissions',
     lastVerifiedDate: 'October 21, 2026',
+    verification: {
+      sourceUrl: 'https://onestop.utexas.edu/managing-costs/cost-tuition-rates/graduate-tuition-rates/',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2025/2026 & 2026/2027 Academic Years',
+      scope: 'Cockrell School of Engineering graduate tuition schedule and cost of attendance',
+      status: 'verified',
+    },
   },
   {
     id: 'uoft-canada',
@@ -256,6 +298,13 @@ export const UNIVERSITIES_DATA: University[] = [
     admissionRequirementsSummary: 'Recognized 4-year Bachelor’s in CS, Mathematics, or Engineering with minimum B+ standing in final two years (approx. 77–79% or 3.3/4.0); verified programming fluency; IELTS Academic overall 7.0 (with no component score below 6.5) or TOEFL iBT 93+ (minimum 22 writing/speaking).',
     officialAdmissionsUrl: 'https://www.utoronto.ca/admissions',
     lastVerifiedDate: 'October 21, 2026',
+    verification: {
+      sourceUrl: 'https://planningandbudget.utoronto.ca/tuition-fee-lookup-tool/',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2026/2027 Entry Schedule',
+      scope: 'Faculty of Arts & Science / Computer Science (MScAC and research doctoral package)',
+      status: 'verified',
+    },
   },
   {
     id: 'ualberta-canada',
@@ -292,6 +341,13 @@ export const UNIVERSITIES_DATA: University[] = [
     admissionRequirementsSummary: 'Minimum GPA of 3.0 on a 4-point scale over the last 60 credits (approx. 75%+ or first division in Pakistan); recognized 4-year Bachelor’s in Computing Science or Mathematics; IELTS Academic overall 6.5 minimum (with minimum 6.0 in each band) or TOEFL iBT 90+.',
     officialAdmissionsUrl: 'https://www.ualberta.ca/admissions-programs/index.html',
     lastVerifiedDate: 'October 21, 2026',
+    verification: {
+      sourceUrl: 'https://www.ualberta.ca/admissions-programs/tuition/international-tuition-guarantee.html',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2025/2026 & 2026/2027 Cohort Guarantee',
+      scope: 'Faculty of Science MSc Computing Science Guaranteed Tuition Model and living estimate',
+      status: 'verified',
+    },
   },
   {
     id: 'manchester-uk',
@@ -328,6 +384,13 @@ export const UNIVERSITIES_DATA: University[] = [
     admissionRequirementsSummary: 'UK First-Class Honours degree (or verified international equivalent: minimum 70%+ or 3.3+ CGPA in Pakistan) in Computer Science or a degree with at least 50% computer science content including advanced programming and algorithms; IELTS Academic 7.0 overall with no sub-score below 6.5 (or TOEFL iBT 100+).',
     officialAdmissionsUrl: 'https://www.manchester.ac.uk/study/international/',
     lastVerifiedDate: 'October 21, 2026',
+    verification: {
+      sourceUrl: 'https://www.manchester.ac.uk/study/masters/courses/list/02327/msc-advanced-computer-science/',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2026/2027 Entry (£39,400) & Indicative 2027/2028 (£41,400)',
+      scope: 'Postgraduate Taught: MSc Advanced Computer Science direct course tuition and fees',
+      status: 'verified',
+    },
   },
   {
     id: 'edinburgh-uk',
@@ -364,6 +427,13 @@ export const UNIVERSITIES_DATA: University[] = [
     admissionRequirementsSummary: 'UK 2:1 Honours degree or verified international equivalent (approx. 65–70% or 3.2+ CGPA in Pakistan) in informatics, computer science, mathematics, or physics; documented programming competence in Python, C/C++, or Java; IELTS Academic 7.0 overall (minimum 6.0 in each section).',
     officialAdmissionsUrl: 'https://www.ed.ac.uk/studying/international',
     lastVerifiedDate: 'October 21, 2026',
+    verification: {
+      sourceUrl: 'https://www.ed.ac.uk/studying/postgraduate/degrees/index.php?r=site/view&edition=2026&id=107',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2026/2027 Entry Schedule (£45,410)',
+      scope: 'School of Informatics Postgraduate Taught (MSc Computer Science / MSc AI)',
+      status: 'verified',
+    },
   },
   {
     id: 'unsw-australia',
@@ -399,6 +469,13 @@ export const UNIVERSITIES_DATA: University[] = [
     admissionRequirementsSummary: 'Recognized 3- or 4-year Bachelor’s degree in any discipline with minimum equivalent of 65% Australian credit average (approx. 2.8+ CGPA in Pakistan); IELTS Academic 6.5 overall with no sub-test below 6.0 (or TOEFL iBT 90+).',
     officialAdmissionsUrl: 'https://www.unsw.edu.au/study/international',
     lastVerifiedDate: 'October 21, 2026',
+    verification: {
+      sourceUrl: 'https://www.unsw.edu.au/study/postgraduate/master-of-information-technology',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2026 Intake (A$63,000/yr; 2025: A$59,000)',
+      scope: 'School of Computer Science and Engineering (Master of Information Technology 8543)',
+      status: 'verified',
+    },
   },
   {
     id: 'melbourne-australia',
@@ -434,5 +511,12 @@ export const UNIVERSITIES_DATA: University[] = [
     admissionRequirementsSummary: 'Undergraduate degree with a major in Computer Science or equivalent technical computing discipline, with a weighted average mark (WAM) equivalent to at least 65% on the University of Melbourne scale; at least 25 points (two subjects) of university-level mathematics or statistics; IELTS Academic 6.5 overall (with no band below 6.0).',
     officialAdmissionsUrl: 'https://study.unimelb.edu.au/how-to-apply/international-applications',
     lastVerifiedDate: 'October 21, 2026',
+    verification: {
+      sourceUrl: 'https://study.unimelb.edu.au/find/courses/graduate/master-of-computer-science/',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2026 Course Fees (A$62,976/yr; 2025: A$58,000)',
+      scope: 'Faculty of Engineering and IT (Master of Computer Science 200-point degree)',
+      status: 'verified',
+    },
   },
 ];

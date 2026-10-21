@@ -381,10 +381,10 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
               Pre-Departure Proof of Funds: The Hidden Hurdle
             </h2>
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
-              Many students plan for tuition but get surprised by upfront visa liquidity regulations. Germany requires €11,904 in a blocked account; Canada requires CAD $20,635 living proof plus 1st year tuition; the UK requires £9,207–£12,006 held for 28 days.
+              Many students plan for tuition but get surprised by upfront visa liquidity regulations. Germany requires €11,904 in a blocked account; Canada requires CAD $23,448 living-funds proof (for applications on or after September 1, 2026, outside Quebec) plus 1st year tuition; the UK requires £10,539 (£13,761 for London institutions) held for 28 consecutive days.
             </p>
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-              Our budget calculator explicitly computes the exact pre-departure cash required before visa approval, protecting your family from last-minute financial distress.
+              Our budget calculator explicitly models the estimated pre-departure cash expenses and statutory visa financial benchmarks before departure, protecting your family from last-minute financial surprises.
             </p>
             <div className="pt-2">
               <button

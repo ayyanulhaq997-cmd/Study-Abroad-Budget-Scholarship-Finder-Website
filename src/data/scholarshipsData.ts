@@ -51,6 +51,13 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
       'Apply to 3 eligible UK university master’s programs and receive an unconditional offer from at least one before the published course offer deadline.',
     ],
     notesForPakistaniStudents: 'Applications closed on October 6, 2026. Pakistan is allocated one of the largest Chevening quotas globally. Next intake opening expected in August 2027.',
+    verification: {
+      sourceUrl: 'https://www.chevening.org/scholarship/pakistan/',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2027/2028 Intake (Closed Oct 6, 2026)',
+      scope: 'UK FCDO Chevening Pakistan 1-year master’s coverage and 2-year work experience rule',
+      status: 'verified',
+    },
   },
   {
     id: 'commonwealth-masters-uk',
@@ -96,6 +103,13 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
       'Nominated through an official national nominating agency (HEC Pakistan) as well as direct submission on the CSC portal.',
     ],
     notesForPakistaniStudents: 'The central CSC portal closed on October 20, 2026 at 16:00 BST. Next cycle opens in September 2027.',
+    verification: {
+      sourceUrl: 'https://cscuk.fcdo.gov.uk/scholarships/commonwealth-masters-scholarships/',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2027/2028 Intake (Closed Oct 20, 2026)',
+      scope: 'CSC UK Master’s full tuition, stipend (£1,439/mo or £1,774/mo London) & HEC nomination',
+      status: 'verified',
+    },
   },
   {
     id: 'daad-epos-germany',
@@ -142,6 +156,13 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
       'Motivation letter demonstrating personal and professional commitment to development-related issues.',
     ],
     notesForPakistaniStudents: 'Applications must be submitted directly to the university offering the chosen EPOS course in Germany, stating DAAD scholarship application. Individual course deadlines must be monitored.',
+    verification: {
+      sourceUrl: 'https://www2.daad.de/deutschland/stipendien/datenbank/en/21148-scholarship-database/?detail=50076777',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2027 Intake Course-Specific Rolling Deadlines',
+      scope: 'DAAD EPOS development courses, €934/mo master and €1,400/mo doctoral stipends (effective Feb 2026)',
+      status: 'verified',
+    },
   },
   {
     id: 'erasmus-mundus',
@@ -184,6 +205,13 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
       'IELTS 6.5 or equivalent English certification.',
     ],
     notesForPakistaniStudents: 'Pakistan is consistently among the top recipient countries worldwide for Erasmus Mundus scholarships. Applicants may apply to up to three individual master consortia per cycle.',
+    verification: {
+      sourceUrl: 'https://www.eacea.ec.europa.eu/scholarships/erasmus-mundus-catalogue_en',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2027 Intake Catalogue Consortia Windows',
+      scope: 'Erasmus Mundus Joint Masters 100% tuition coverage and €1,400/month living allowance',
+      status: 'verified',
+    },
   },
   {
     id: 'gks-south-korea',
@@ -230,6 +258,13 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
       'Must complete 1 year of Korean language program in Korea before degree study (exempt if TOPIK level 5 or 6).',
     ],
     notesForPakistaniStudents: 'Applications open annually around February. Two separate tracks exist: Embassy Track (via Korean Embassy Islamabad) and University Track (direct to Korean university).',
+    verification: {
+      sourceUrl: 'https://www.studyinkorea.go.kr/en/scholarship/Gks1NoticeList.do',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2027 Graduate Intake (Expected Feb 2027, Currently Closed)',
+      scope: 'NIIED Global Korea Scholarship full tuition, ₩1,000,000/mo stipend, and 1-yr Korean language training',
+      status: 'verified',
+    },
   },
   {
     id: 'turkiye-burslari',
@@ -275,6 +310,13 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
       'Age limits: Under 21 for Bachelor; under 30 for Master; under 35 for PhD.',
     ],
     notesForPakistaniStudents: 'Over 1,000 Pakistani students apply annually. Free on-campus dormitory accommodation significantly reduces out-of-pocket costs.',
+    verification: {
+      sourceUrl: 'https://www.turkiyeburslari.gov.tr',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2027 Annual Cycle (Expected Jan 10 - Feb 20, 2027, Currently Closed)',
+      scope: 'YTB Türkiye Bursları 100% tuition, dorm accommodation, stipend, and TÖMER language course',
+      status: 'verified',
+    },
   },
   {
     id: 'kaist-scholarship-korea',
@@ -314,6 +356,13 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
       'Strong quantitative and programming background, especially for School of Computing and Kim Jaechul Graduate School of AI.',
     ],
     notesForPakistaniStudents: 'One of the top institutions globally for AI and robotics. Most accepted international graduate students automatically receive tuition waiver and professor research stipend.',
+    verification: {
+      sourceUrl: 'https://admission.kaist.ac.kr/graduate/intl/scholarships',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: 'Fall 2027 Graduate Cycle (Expected Dec 2026, Spring 2027 Concluded)',
+      scope: 'KAIST institutional 100% tuition waiver and base living stipend (₩350,000–₩400,000/mo)',
+      status: 'verified',
+    },
   },
   {
     id: 'fulbright-pakistan',
@@ -361,6 +410,13 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
       'Mandatory agreement to return to Pakistan for at least 2 years post-graduation.',
     ],
     notesForPakistaniStudents: 'Cycle for 2027 intake closed on April 1, 2026. Next cycle is anticipated in February 2027. USEFP holds regional informational webinars across Lahore, Islamabad, and Karachi.',
+    verification: {
+      sourceUrl: 'https://www.usefp.org/scholarships/fulbright-degree.cfm',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2027 Cycle (Closed April 1, 2026); 2028 Cycle Expected Feb 2027',
+      scope: 'USEFP Fulbright Foreign Student Program (Master’s & PhD only), tuition, stipend, and J-1 2-year home rule',
+      status: 'verified',
+    },
   },
   {
     id: 'australia-awards',
@@ -408,6 +464,13 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
       'Commitment to return to Pakistan for at least two years after completing study in Australia.',
     ],
     notesForPakistaniStudents: '2027 cycle closed on April 30, 2026. Priority areas for Pakistan include economic growth, water security, health, education, and climate resilience.',
+    verification: {
+      sourceUrl: 'https://www.dfat.gov.au/people-to-people/australia-awards/australia-awards-scholarships',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: '2027 Intake (Closed April 30, 2026); 2028 Cycle Expected Feb 1, 2027',
+      scope: 'DFAT Australia Awards Pakistan Master’s scholarships, full tuition, air travel, and CLE stipend',
+      status: 'verified',
+    },
   },
   {
     id: 'vanier-cgs-canada',
@@ -444,6 +507,13 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
       'Current Vanier CGS award holders continue under their existing terms.',
     ],
     notesForPakistaniStudents: 'Do not submit new applications for Vanier CGS. Refer to the replacement CGRS-D guidelines on the official Government of Canada Tri-Agency portal.',
+    verification: {
+      sourceUrl: 'https://vanier.gc.ca/en/home-accueil.html',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: 'Discontinued (Phased out Fall 2024; succeeded by CGRS-D)',
+      scope: 'Vanier CGS phase-out confirmation and CGRS-D Tri-Agency replacement ($40,000 CAD/year)',
+      status: 'expired',
+    },
   },
   {
     id: 'placeholder-unverified-sample',
@@ -471,6 +541,13 @@ export const SCHOLARSHIPS_DATA: Scholarship[] = [
       'Do not rely on this record for financial planning until official verification is published.',
     ],
     notesForPakistaniStudents: 'Per our transparency policy, this placeholder is segregated from confirmed opportunities and not included in active verified totals.',
+    verification: {
+      sourceUrl: '#',
+      checkedAt: 'October 21, 2026',
+      applicableCycle: 'Unconfirmed Cycle',
+      scope: 'Unverified placeholder segregated from verified totals per audit policy',
+      status: 'pending',
+    },
   },
 ];
 

@@ -161,7 +161,7 @@ export const BudgetCalculatorPage: React.FC = () => {
       exchangeRateToPKR: country.defaultExchangeRateToPKR,
       isExchangeRateUserProvided: false,
       annualTuition: country.typicalTuitionMin,
-      annualLiving: country.statutoryAnnualLivingProof || country.typicalLivingMin,
+      annualLiving: country.typicalLivingMin,
       annualInsurance:
         country.currencyCode === 'EUR'
           ? 1440
@@ -234,8 +234,9 @@ export const BudgetCalculatorPage: React.FC = () => {
     setTimeout(() => setCopiedLinkNotice(false), 2500);
   };
 
-  // Statutory comparison warning
+  // Visa documentation notice (for countries with a fixed statutory living benchmark)
   const isBelowStatutoryLivingProof =
+    activeCountry.visaRequirementType === 'fixed_benchmark' &&
     activeCountry.statutoryAnnualLivingProof > 0 &&
     input.expenseCurrency === activeCountry.currencyCode &&
     input.annualLiving < activeCountry.statutoryAnnualLivingProof;
@@ -603,16 +604,26 @@ export const BudgetCalculatorPage: React.FC = () => {
                   className="w-full pl-12 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-mono font-semibold text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-600"
                 />
               </div>
-              {/* Statutory Warning */}
+              {/* Visa Documentation Guidance */}
               {isBelowStatutoryLivingProof && (
-                <div className="mt-2 p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-start space-x-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
+                <div className="mt-2 p-2.5 rounded-lg bg-blue-50/70 border border-blue-200 text-xs text-blue-900 flex items-start space-x-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-blue-600 mt-0.5" />
                   <div>
-                    <span className="font-bold">Official Living Benchmark Notice: </span>
-                    {activeCountry.name} requires proof of at least {activeCountry.currencySymbol}{' '}
-                    {activeCountry.statutoryAnnualLivingProof.toLocaleString()} per year for student visa issuance ({activeCountry.officialProofOfFundsRequirement}). Entering a lower figure might understate your required embassy proof.
+                    <span className="font-bold">Visa Financial Benchmark Context: </span>
+                    {activeCountry.name} sets an official visa financial proof threshold of {activeCountry.currencySymbol}{' '}
+                    {activeCountry.statutoryAnnualLivingProof.toLocaleString()}/yr ({activeCountry.officialProofOfFundsRequirement}). This threshold is immigration evidence of available funds for visa issuance—not a mandate for what your actual annual spending must be. Your day-to-day living expenses may vary by city and lifestyle.
                   </div>
                 </div>
+              )}
+              {activeCountry.visaRequirementType === 'institution_specific' && (
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Note: For the {activeCountry.name}, there is no universal federal visa financial benchmark. Visa proof is determined institution-by-institution on Form I-20 (Cost of Attendance) certified by your Designated School Official.
+                </p>
+              )}
+              {activeCountry.visaRequirementType === 'variable_regional' && (
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Note: For {activeCountry.name}, financial proof requirements are determined based on your Certificate of Admission (CoA) and vary by university and campus location.
+                </p>
               )}
             </div>
 

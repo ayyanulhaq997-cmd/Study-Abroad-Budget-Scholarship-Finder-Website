@@ -22,6 +22,20 @@ export interface OfficialLink {
   sourceType: 'Government' | 'University' | 'Official Agency';
 }
 
+export type VisaRequirementType =
+  | 'fixed_benchmark'
+  | 'institution_specific'
+  | 'variable_regional';
+
+export interface VerificationRecord {
+  sourceUrl: string;
+  checkedAt: string;
+  applicableCycle: string;
+  scope: string;
+  status: 'verified' | 'pending' | 'expired';
+  notes?: string;
+}
+
 export interface Country {
   id: string;
   name: string;
@@ -50,6 +64,8 @@ export interface Country {
   notes: string;
   lastVerifiedDate: string;
   officialSourceUrl: string;
+  visaRequirementType?: VisaRequirementType;
+  verification?: VerificationRecord;
 }
 
 export type ProgramStatus =
@@ -87,6 +103,7 @@ export interface Scholarship {
   conditionalBenefits?: string[]; // Benefits that depend on a particular course, host university, or award category
   eligibilityRequirements: string[];
   notesForPakistaniStudents?: string;
+  verification?: VerificationRecord;
 }
 
 export interface University {
@@ -114,6 +131,7 @@ export interface University {
   officialAdmissionsUrl: string;
   lastVerifiedDate: string;
   knownScholarships?: string[]; // Backwards compatibility alias
+  verification?: VerificationRecord;
 }
 
 export interface PreDepartureCosts {

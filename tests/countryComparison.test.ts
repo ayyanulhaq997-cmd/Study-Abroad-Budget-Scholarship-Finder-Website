@@ -234,6 +234,44 @@ function runCountryComparisonTests() {
         country.typicalLivingMax >= country.typicalLivingMin,
         `${country.name} estimated actual living range is valid`
       );
+      assert(
+        Boolean(country.visaRequirementType),
+        `${country.name} defines visaRequirementType`
+      );
+      assert(
+        Boolean(country.verification && country.verification.status === 'verified'),
+        `${country.name} has a structured VerificationRecord with status 'verified'`
+      );
+      assert(
+        Boolean(country.verification && country.verification.sourceUrl.startsWith('https://')),
+        `${country.name} verification record links to an HTTPS source URL`
+      );
+      assert(
+        Boolean(country.verification && country.verification.applicableCycle),
+        `${country.name} verification record defines an applicable admission/immigration cycle`
+      );
+    }
+
+    // Specific visa requirement types
+    const us = COUNTRIES_DATA.find((c) => c.id === 'usa');
+    assert(
+      us?.visaRequirementType === 'institution_specific',
+      'USA is classified as institution_specific (Form I-20 COA, no federal statutory flat sum)'
+    );
+
+    const kr = COUNTRIES_DATA.find((c) => c.id === 'south-korea');
+    assert(
+      kr?.visaRequirementType === 'variable_regional',
+      'South Korea is classified as variable_regional (CoA-determined & regional benchmark)'
+    );
+
+    const fixedBenchmarkCountries = ['germany', 'canada', 'uk', 'australia'];
+    for (const id of fixedBenchmarkCountries) {
+      const c = COUNTRIES_DATA.find((item) => item.id === id);
+      assert(
+        c?.visaRequirementType === 'fixed_benchmark',
+        `${c?.name} is classified as fixed_benchmark`
+      );
     }
   }
 

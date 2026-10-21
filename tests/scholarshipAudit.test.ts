@@ -286,8 +286,46 @@ function runScholarshipAuditTests() {
     );
   }
 
+  console.log('\nTest Suite 11: Scholarship Structured VerificationRecord Metadata');
+  {
+    for (const sch of SCHOLARSHIPS_DATA) {
+      assert(
+        Boolean(sch.verification),
+        `${sch.name} includes structured verification record`
+      );
+      assert(
+        Boolean(sch.verification?.applicableCycle),
+        `${sch.name} verification record defines an applicable cycle`
+      );
+      assert(
+        Boolean(sch.verification?.scope),
+        `${sch.name} verification record defines eligibility and benefit scope`
+      );
+      if (sch.programStatus === 'Discontinued') {
+        assert(
+          sch.verification?.status === 'expired' || sch.verification?.status === 'verified',
+          `Discontinued scholarship ${sch.name} has status 'expired' or 'verified'`
+        );
+      } else if (sch.isVerified) {
+        assert(
+          sch.verification?.status === 'verified',
+          `Verified scholarship ${sch.name} has status 'verified'`
+        );
+        assert(
+          Boolean(sch.verification?.sourceUrl.startsWith('https://')),
+          `Verified scholarship ${sch.name} provides official HTTPS source URL (${sch.verification?.sourceUrl})`
+        );
+      } else {
+        assert(
+          sch.verification?.status === 'pending',
+          `Unverified placeholder ${sch.name} has status 'pending'`
+        );
+      }
+    }
+  }
+
   console.log('\n====================================================');
-  console.log('ALL SCHOLARSHIP AUDIT TESTS PASSED SUCCESSFULLY (10/10 SUITES)');
+  console.log('ALL SCHOLARSHIP AUDIT TESTS PASSED SUCCESSFULLY (11/11 SUITES)');
   console.log('====================================================');
 }
 

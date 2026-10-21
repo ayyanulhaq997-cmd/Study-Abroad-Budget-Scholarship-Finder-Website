@@ -49,7 +49,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onNavigate }) => {
         </p>
         <ul className="list-disc pl-5 text-sm text-slate-700 space-y-1.5">
           <li>
-            <strong>Mandatory Upfront Living Proof:</strong> Such as the German Sperrkonto (€11,904) or Canadian IRCC financial benchmark (CAD $20,635), which must be transferred <em>before</em> visa issuance.
+            <strong>Statutory Visa Financial Benchmarks:</strong> Such as the German Sperrkonto (€11,904 benchmark) or Canadian IRCC financial capacity requirement (CAD $23,448 for single applicants outside Quebec applying on or after September 1, 2026), which students must demonstrate to satisfy immigration regulations.
           </li>
           <li>
             <strong>Pre-Departure Cash Outflows:</strong> HEC/IBCC attestations, IELTS test fees, visa appointment slots, airfare, and biometrics that can exceed 4 to 6 Lakh PKR before stepping on a plane.

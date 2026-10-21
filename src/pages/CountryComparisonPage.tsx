@@ -372,6 +372,21 @@ export const CountryComparisonPage: React.FC<CountryComparisonPageProps> = ({
                   const proofPKR = c.statutoryAnnualLivingProof * rate;
                   return (
                     <td key={c.id} className="py-3.5 px-4 border-l border-slate-200 space-y-1.5">
+                      <div className="flex items-center gap-1.5 pb-0.5">
+                        {c.visaRequirementType === 'fixed_benchmark' ? (
+                          <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                            Fixed Benchmark
+                          </span>
+                        ) : c.visaRequirementType === 'institution_specific' ? (
+                          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-100 text-purple-800 border border-purple-300">
+                            Institution-Specific (Form I-20)
+                          </span>
+                        ) : (
+                          <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">
+                            Variable / CoA-Dependent
+                          </span>
+                        )}
+                      </div>
                       {c.id === 'uk' ? (
                         <div className="space-y-1">
                           <div>
