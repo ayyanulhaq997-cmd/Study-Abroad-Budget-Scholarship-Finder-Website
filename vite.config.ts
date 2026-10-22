@@ -15,7 +15,7 @@ export default defineConfig(() => {
             if (req.method !== 'POST') {
               res.statusCode = 405;
               res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ success: false, error: 'Method not allowed' }));
+              res.end(JSON.stringify({ success: false, error: 'Method not allowed. Only POST is accepted.' }));
               return;
             }
 
@@ -25,8 +25,24 @@ export default defineConfig(() => {
             });
             req.on('end', async () => {
               try {
-                const parsed = JSON.parse(body || '{}');
-                const { name, email, message, hp_website } = parsed;
+                if (body.length > 15 * 1024) {
+                  res.statusCode = 413;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({ success: false, error: 'Payload exceeds 15 KB limit.' }));
+                  return;
+                }
+
+                let parsed: any = {};
+                try {
+                  parsed = JSON.parse(body || '{}');
+                } catch {
+                  res.statusCode = 400;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({ success: false, error: 'Malformed JSON payload.' }));
+                  return;
+                }
+
+                const { name, email, subject, message, hp_website } = parsed;
 
                 // Honeypot spam check
                 if (hp_website && typeof hp_website === 'string' && hp_website.trim().length > 0) {
@@ -36,11 +52,32 @@ export default defineConfig(() => {
                   return;
                 }
 
-                // Validation check
-                if (!name || name.trim().length < 2 || !email || !message || message.trim().length < 15) {
+                // Validation and length boundaries
+                if (!name || typeof name !== 'string' || name.trim().length < 2 || name.trim().length > 100) {
                   res.statusCode = 400;
                   res.setHeader('Content-Type', 'application/json');
-                  res.end(JSON.stringify({ success: false, error: 'Validation failed.' }));
+                  res.end(JSON.stringify({ success: false, error: 'Name must be between 2 and 100 characters.' }));
+                  return;
+                }
+
+                if (!email || typeof email !== 'string' || email.trim().length < 5 || email.trim().length > 254) {
+                  res.statusCode = 400;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({ success: false, error: 'Email must be valid and under 254 characters.' }));
+                  return;
+                }
+
+                if (subject && typeof subject === 'string' && subject.trim().length > 150) {
+                  res.statusCode = 400;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({ success: false, error: 'Subject must not exceed 150 characters.' }));
+                  return;
+                }
+
+                if (!message || typeof message !== 'string' || message.trim().length < 15 || message.trim().length > 3000) {
+                  res.statusCode = 400;
+                  res.setHeader('Content-Type', 'application/json');
+                  res.end(JSON.stringify({ success: false, error: 'Message must be between 15 and 3000 characters.' }));
                   return;
                 }
 
@@ -51,6 +88,8 @@ export default defineConfig(() => {
                   'muhammadsaleem.76588@gmail.com';
 
                 if (resendKey) {
+                  const fromAddress =
+                    process.env.RESEND_FROM_EMAIL || 'GlobalEdu Contact <onboarding@resend.dev>';
                   const resendRes = await fetch('https://api.resend.com/emails', {
                     method: 'POST',
                     headers: {
@@ -58,20 +97,30 @@ export default defineConfig(() => {
                       'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                      from: 'GlobalEdu Contact <notifications@resend.dev>',
+                      from: fromAddress,
                       to: [recipient],
-                      reply_to: email,
+                      reply_to: email.trim(),
                       subject: `[GlobalEdu Dev] ${parsed.category || 'Report'}: ${parsed.subject || 'Submission'}`,
-                      text: `From: ${name} (${email})\n\n${message}`,
+                      text: `From: ${name.trim()} (${email.trim()})\n\n${message.trim()}`,
                     }),
                   });
-                  if (resendRes.ok) {
+
+                  let resendData: any = {};
+                  try {
+                    resendData = await resendRes.json();
+                  } catch {
+                    // Non-JSON
+                  }
+
+                  if (resendRes.ok && resendData?.id) {
                     res.statusCode = 200;
                     res.setHeader('Content-Type', 'application/json');
                     res.end(
                       JSON.stringify({
                         success: true,
-                        message: 'Delivered successfully to editorial inbox.',
+                        message: 'Submission received and accepted into dispatch queue.',
+                        dispatchId: resendData.id,
+                        timestamp: new Date().toISOString(),
                       })
                     );
                     return;
@@ -93,7 +142,7 @@ export default defineConfig(() => {
               } catch (err: any) {
                 res.statusCode = 500;
                 res.setHeader('Content-Type', 'application/json');
-                res.end(JSON.stringify({ success: false, error: err.message }));
+                res.end(JSON.stringify({ success: false, error: 'Internal server error' }));
               }
             });
           });

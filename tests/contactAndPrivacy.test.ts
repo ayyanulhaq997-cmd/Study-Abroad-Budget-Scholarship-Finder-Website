@@ -8,6 +8,7 @@ import {
   createMailtoLink,
   submitContactForm,
   MONITORED_EDITORIAL_EMAIL,
+  ALLOWED_CATEGORIES,
 } from '../src/services/contactService.ts';
 
 function assert(condition: boolean, message: string) {
@@ -47,7 +48,7 @@ console.log('Test Suite 1: Contact Form Input Validation');
     {
       name: 'A',
       email: 'test@example.com',
-      category: 'General',
+      category: 'General Calculator Feedback',
       message: 'This is a sufficiently long message for testing.',
     },
     baseTime,
@@ -60,7 +61,7 @@ console.log('Test Suite 1: Contact Form Input Validation');
     {
       name: 'Test User',
       email: 'not-an-email',
-      category: 'General',
+      category: 'General Calculator Feedback',
       message: 'This is a sufficiently long message for testing.',
     },
     baseTime,
@@ -73,7 +74,7 @@ console.log('Test Suite 1: Contact Form Input Validation');
     {
       name: 'Test User',
       email: 'test@example.com',
-      category: 'General',
+      category: 'General Calculator Feedback',
       message: 'Too short',
     },
     baseTime,
@@ -135,7 +136,7 @@ console.log('\nTest Suite 3: Clickable Mailto Link & Monitored Email');
     {
       name: 'Muhammad Saleem',
       email: 'muhammadsaleem.76588@gmail.com',
-      category: 'Data Correction',
+      category: 'Suggest a Verified Scholarship Scheme',
       subject: 'TUM Fee Notice',
       message: 'Official source: https://tum.de',
     },
@@ -143,7 +144,7 @@ console.log('\nTest Suite 3: Clickable Mailto Link & Monitored Email');
   );
 
   assert(mailto.startsWith('mailto:muhammadsaleem.76588@gmail.com'), 'Mailto link targets monitored recipient');
-  assert(mailto.includes(encodeURIComponent('[GlobalEdu] Data Correction: TUM Fee Notice')), 'Mailto link encodes subject line');
+  assert(mailto.includes(encodeURIComponent('[GlobalEdu] Suggest a Verified Scholarship Scheme: TUM Fee Notice')), 'Mailto link encodes subject line');
   assert(mailto.includes(encodeURIComponent('Official source: https://tum.de')), 'Mailto link encodes message body');
 }
 
@@ -157,6 +158,170 @@ console.log('\nTest Suite 4: Privacy & LocalStorage Keys Alignment');
   assert(EXPECTED_PROFILES_KEY === 'globaledu_saved_profiles_v2', 'Saved profiles localStorage key is globaledu_saved_profiles_v2');
 }
 
+// Test Suite 5: Strict Maximum Length & Category Constraints
+console.log('\nTest Suite 5: Strict Maximum Length & Category Constraints');
+{
+  const baseTime = 3000000;
+  const validSubmitTime = baseTime + 5000;
+
+  // Name exceeds 100 characters
+  const longName = 'A'.repeat(101);
+  const nameCheck = validateContactForm(
+    {
+      name: longName,
+      email: 'user@example.com',
+      category: 'Other',
+      message: 'Valid length message exceeding fifteen characters.',
+    },
+    baseTime,
+    validSubmitTime
+  );
+  assert(nameCheck.isValid === false, 'Rejects name exceeding 100 characters');
+
+  // Email exceeds 254 characters
+  const longEmail = 'a'.repeat(245) + '@example.com';
+  const emailCheck = validateContactForm(
+    {
+      name: 'Valid Name',
+      email: longEmail,
+      category: 'Other',
+      message: 'Valid length message exceeding fifteen characters.',
+    },
+    baseTime,
+    validSubmitTime
+  );
+  assert(emailCheck.isValid === false, 'Rejects email exceeding 254 characters');
+
+  // Subject exceeds 150 characters
+  const longSubject = 'S'.repeat(151);
+  const subjectCheck = validateContactForm(
+    {
+      name: 'Valid Name',
+      email: 'user@example.com',
+      category: 'Other',
+      subject: longSubject,
+      message: 'Valid length message exceeding fifteen characters.',
+    },
+    baseTime,
+    validSubmitTime
+  );
+  assert(subjectCheck.isValid === false, 'Rejects subject exceeding 150 characters');
+
+  // Message exceeds 3000 characters
+  const longMessage = 'M'.repeat(3001);
+  const msgCheck = validateContactForm(
+    {
+      name: 'Valid Name',
+      email: 'user@example.com',
+      category: 'Other',
+      message: longMessage,
+    },
+    baseTime,
+    validSubmitTime
+  );
+  assert(msgCheck.isValid === false, 'Rejects message exceeding 3000 characters');
+
+  // Invalid category
+  const invalidCategory = validateContactForm(
+    {
+      name: 'Valid Name',
+      email: 'user@example.com',
+      category: 'Unauthorized Category' as any,
+      message: 'Valid length message exceeding fifteen characters.',
+    },
+    baseTime,
+    validSubmitTime
+  );
+  assert(invalidCategory.isValid === false, 'Rejects unlisted category');
+  assert(ALLOWED_CATEGORIES.length === 5, 'Maintains 5 official category options');
+}
+
+// Test Suite 6: Explicit JSON Success Requirement in submitContactForm
+console.log('\nTest Suite 6: Explicit JSON Success Requirement in submitContactForm');
+{
+  const originalFetch = globalThis.fetch;
+
+  // Case A: Server returns HTTP 200 but empty / non-confirming JSON
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify({ status: 'ok_unconfirmed' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+  const testPayload = {
+    name: 'Muhammad Saleem',
+    email: 'muhammadsaleem.76588@gmail.com',
+    category: 'General Calculator Feedback',
+    message: 'Testing explicit JSON confirmation check.',
+  };
+
+  const resA = await submitContactForm(testPayload, 'http://localhost/test');
+  assert(resA.success === false, 'Rejects HTTP 200 when JSON lacks explicit success: true or ok: true');
+  assert(
+    resA.error?.includes('explicit success confirmation') || false,
+    'Reports explicit confirmation missing in error response'
+  );
+
+  // Case B: Server returns HTTP 200 with HTML/plain-text (e.g. error page)
+  globalThis.fetch = async () =>
+    new Response('<html><body>200 OK</body></html>', {
+      status: 200,
+      headers: { 'Content-Type': 'text/html' },
+    });
+
+  const resB = await submitContactForm(testPayload, 'http://localhost/test');
+  assert(resB.success === false, 'Rejects HTTP 200 with non-JSON response');
+
+  // Case C: Server returns HTTP 200 with explicit success: true
+  globalThis.fetch = async () =>
+    new Response(JSON.stringify({ success: true, message: 'Delivered to queue' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+  const resC = await submitContactForm(testPayload, 'http://localhost/test');
+  assert(resC.success === true, 'Accepts HTTP 200 when JSON explicitly confirms success: true');
+  assert(resC.message === 'Delivered to queue', 'Extracts server confirmation message');
+
+  // Restore fetch
+  globalThis.fetch = originalFetch;
+}
+
+// Test Suite 7: Vercel Routing Regex Integrity
+console.log('\nTest Suite 7: Vercel Routing Regex Integrity');
+{
+  // Regex from vercel.json: /((?!api/).*)
+  const vercelRewriteRegex = /^\/((?!api\/).*)$/;
+
+  // Routes that MUST match the rewrite to /index.html:
+  const spaRoutes = [
+    '/',
+    '/budget-calculator',
+    '/countries',
+    '/scholarships',
+    '/universities',
+    '/about',
+    '/contact',
+    '/privacy',
+  ];
+
+  for (const route of spaRoutes) {
+    const matched = vercelRewriteRegex.test(route);
+    assert(matched === true, `SPA route "${route}" is rewritten to index.html`);
+  }
+
+  // Routes that MUST NOT match the rewrite (handled as Serverless Functions):
+  const apiRoutes = [
+    '/api/contact',
+    '/api/contact/verify',
+  ];
+
+  for (const route of apiRoutes) {
+    const matched = vercelRewriteRegex.test(route);
+    assert(matched === false, `API route "${route}" is NOT rewritten (executes serverless function)`);
+  }
+}
+
 console.log('\n====================================================');
-console.log('ALL CONTACT & PRIVACY TESTS PASSED (4/4 SUITES)');
+console.log('ALL CONTACT & PRIVACY TESTS PASSED (7/7 SUITES)');
 console.log('====================================================');
