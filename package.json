@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "test": "tsx tests/budgetCalculator.test.ts && tsx tests/scholarshipAudit.test.ts && tsx tests/countryComparison.test.ts && tsx tests/universityFeesAudit.test.ts"
+    "test": "tsx tests/budgetCalculator.test.ts && tsx tests/scholarshipAudit.test.ts && tsx tests/countryComparison.test.ts && tsx tests/universityFeesAudit.test.ts && tsx tests/contactAndPrivacy.test.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

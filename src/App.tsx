@@ -104,14 +104,17 @@ export default function App() {
     const twitterDesc = document.querySelector('meta[name="twitter:description"]');
     if (twitterDesc) twitterDesc.setAttribute('content', description);
 
-    // Update canonical and og:url
+    // Update canonical and og:url preserving official production domain
+    const PRIMARY_DOMAIN = 'https://study-abroad-budget-scholarship-fin-ochre.vercel.app';
+    const canonicalUrl = `${PRIMARY_DOMAIN}${currentPath === '/' ? '/' : currentPath}`;
     const fullUrl = window.location.origin + currentPath;
+
     const ogUrl = document.querySelector('meta[property="og:url"]');
     if (ogUrl) ogUrl.setAttribute('content', fullUrl);
 
     let canonical = document.querySelector('link[rel="canonical"]');
     if (canonical) {
-      canonical.setAttribute('href', fullUrl);
+      canonical.setAttribute('href', canonicalUrl);
     }
   }, [currentPath]);
 

@@ -183,6 +183,11 @@ export const BudgetCalculatorPage: React.FC = () => {
   const handleReset = () => {
     if (window.confirm('Reset all values to default Germany Master’s scenario?')) {
       setInput(DEFAULT_BUDGET_INPUT);
+      try {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+      } catch {
+        // Ignore
+      }
     }
   };
 
