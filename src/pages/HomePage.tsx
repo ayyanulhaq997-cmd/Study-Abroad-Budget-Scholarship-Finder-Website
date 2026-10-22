@@ -161,10 +161,12 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
                               {c.name}
                             </span>
                             <span className="text-xs text-slate-500 block">
-                              {c.visaRequirementType === 'institution_specific' ? (
-                                'Visa Proof: Form I-20 COA'
+                              {c.id === 'uk' ? (
+                                'Visa Proof: £13,761 (London) / £10,539 (Outside)'
+                              ) : c.visaRequirementType === 'institution_specific' ? (
+                                'Visa Proof: Form I-20 COA (Institution-Specific)'
                               ) : c.visaRequirementType === 'variable_regional' ? (
-                                'Visa Proof: CoA-Dependent (~₩20M)'
+                                'Visa Proof: CoA-Dependent (~₩20M Seoul)'
                               ) : c.statutoryAnnualLivingProof !== null ? (
                                 `Visa Proof: ${c.currencySymbol} ${c.statutoryAnnualLivingProof.toLocaleString()} /yr`
                               ) : (

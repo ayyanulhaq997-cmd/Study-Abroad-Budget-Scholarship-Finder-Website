@@ -15,6 +15,8 @@ import {
 import {
   evaluateEligibility,
   matchAllScholarships,
+  isCountryMatchingScholarship,
+  getActiveVerifiedScholarshipsForDestination,
   UserEligibilityProfile,
 } from '../src/services/eligibilityMatcher';
 
@@ -324,8 +326,201 @@ function runScholarshipAuditTests() {
     }
   }
 
+  console.log('\nTest Suite 12: Erasmus Mundus Regional Scope & Destination Rules');
+  {
+    const erasmus = SCHOLARSHIPS_DATA.find((s) => s.id === 'erasmus-mundus');
+    assert(!!erasmus, 'Erasmus Mundus record exists');
+    if (erasmus) {
+      // 1. Excluded for non-European destinations
+      assert(
+        !isCountryMatchingScholarship(erasmus, 'Australia'),
+        'Erasmus Mundus is strictly EXCLUDED for Australia'
+      );
+      assert(
+        !isCountryMatchingScholarship(erasmus, 'australia'),
+        'Erasmus Mundus is strictly EXCLUDED for lowercase australia'
+      );
+      assert(
+        !isCountryMatchingScholarship(erasmus, 'United States'),
+        'Erasmus Mundus is strictly EXCLUDED for United States'
+      );
+      assert(
+        !isCountryMatchingScholarship(erasmus, 'usa'),
+        'Erasmus Mundus is strictly EXCLUDED for usa'
+      );
+      assert(
+        !isCountryMatchingScholarship(erasmus, 'Canada'),
+        'Erasmus Mundus is strictly EXCLUDED for Canada'
+      );
+      assert(
+        !isCountryMatchingScholarship(erasmus, 'South Korea'),
+        'Erasmus Mundus is strictly EXCLUDED for South Korea'
+      );
+
+      // 2. Available for appropriate European destinations
+      assert(
+        isCountryMatchingScholarship(erasmus, 'Germany'),
+        'Erasmus Mundus is available for Germany'
+      );
+      assert(
+        isCountryMatchingScholarship(erasmus, 'United Kingdom'),
+        'Erasmus Mundus is available for United Kingdom'
+      );
+      assert(
+        isCountryMatchingScholarship(erasmus, 'uk'),
+        'Erasmus Mundus is available for UK alias'
+      );
+      assert(
+        isCountryMatchingScholarship(erasmus, 'France'),
+        'Erasmus Mundus is available for France via Multiple European Countries rule'
+      );
+      assert(
+        isCountryMatchingScholarship(erasmus, 'Spain'),
+        'Erasmus Mundus is available for Spain via Multiple European Countries rule'
+      );
+      assert(
+        isCountryMatchingScholarship(erasmus, 'All'),
+        'Erasmus Mundus is included when destination is All'
+      );
+    }
+  }
+
+  console.log('\nTest Suite 13: Active Verified Recommendations by Destination & Program Status');
+  {
+    // Australia active recommendations
+    const auRecs = getActiveVerifiedScholarshipsForDestination({ destination: 'Australia' });
+    assert(
+      !auRecs.some((s) => s.id === 'erasmus-mundus'),
+      'Australia active recommendations DO NOT include Erasmus Mundus'
+    );
+    assert(
+      !auRecs.some((s) => s.id === 'australia-awards'),
+      'Australia active recommendations DO NOT include closed Australia Awards'
+    );
+    assert(
+      !auRecs.some((s) => s.programStatus === 'Closed'),
+      'Australia active recommendations exclude all Closed scholarships'
+    );
+    assert(
+      !auRecs.some((s) => s.programStatus === 'Discontinued'),
+      'Australia active recommendations exclude Discontinued scholarships'
+    );
+    assert(
+      !auRecs.some((s) => !s.isVerified || s.programStatus === 'Not Yet Verified'),
+      'Australia active recommendations exclude unverified placeholders'
+    );
+    assert(
+      auRecs.length === 0,
+      'Australia has 0 active open/upcoming centralized scholarships in current dataset'
+    );
+
+    // Germany active recommendations (Master)
+    const deMasterRecs = getActiveVerifiedScholarshipsForDestination({
+      destination: 'Germany',
+      degreeLevel: 'Master',
+    });
+    assert(
+      deMasterRecs.some((s) => s.id === 'daad-epos-germany'),
+      'Germany Master recommendations include DAAD EPOS'
+    );
+    assert(
+      deMasterRecs.some((s) => s.id === 'erasmus-mundus'),
+      'Germany Master recommendations include Erasmus Mundus'
+    );
+
+    // Degree Level Sensitivity (Bachelor)
+    const deBachelorRecs = getActiveVerifiedScholarshipsForDestination({
+      destination: 'Germany',
+      degreeLevel: 'Bachelor',
+    });
+    assert(
+      !deBachelorRecs.some((s) => s.id === 'daad-epos-germany'),
+      'Undergraduate/Bachelor recommendations exclude graduate-only DAAD EPOS'
+    );
+    assert(
+      !deBachelorRecs.some((s) => s.id === 'erasmus-mundus'),
+      'Undergraduate/Bachelor recommendations exclude graduate-only Erasmus Mundus'
+    );
+    assert(
+      deBachelorRecs.length === 0,
+      'No graduate scholarships falsely recommended for German Bachelor’s applicants'
+    );
+
+    // South Korea active recommendations (Master)
+    const krMasterRecs = getActiveVerifiedScholarshipsForDestination({
+      destination: 'South Korea',
+      degreeLevel: 'Master',
+    });
+    assert(
+      krMasterRecs.some((s) => s.id === 'gks-south-korea'),
+      'South Korea recommendations include GKS'
+    );
+    assert(
+      krMasterRecs.some((s) => s.id === 'kaist-scholarship-korea'),
+      'South Korea recommendations include KAIST International Scholarship'
+    );
+    assert(
+      !krMasterRecs.some((s) => s.id === 'erasmus-mundus'),
+      'South Korea recommendations strictly exclude Erasmus Mundus'
+    );
+
+    // Destination change updating verification
+    assert(
+      deMasterRecs.length > 0 && auRecs.length === 0,
+      'Switching destination from Germany to Australia correctly updates recommendation count from >0 to 0'
+    );
+  }
+
+  console.log('\nTest Suite 14: Matcher Evaluation for Australia vs Europe Destinations');
+  {
+    const profileAu: UserEligibilityProfile = {
+      academicPercentage: 85,
+      ieltsScore: 7.5,
+      degreeLevel: 'Master',
+      subjectArea: 'Engineering & Technology',
+      preferredDestination: 'Australia',
+      workExperienceYears: 3,
+      isPakistaniCitizen: true,
+    };
+
+    const resultsAu = matchAllScholarships(profileAu);
+    const erasmusAuResult = resultsAu.find((r) => r.scholarship.id === 'erasmus-mundus');
+    assert(!!erasmusAuResult, 'Erasmus evaluated in matcher for Australia destination');
+    assert(
+      erasmusAuResult?.overallStatus === 'Not Eligible',
+      'Erasmus Mundus evaluates as "Not Eligible" when preferredDestination is Australia'
+    );
+    assert(
+      Boolean(erasmusAuResult?.requirementsNotMet.some((r) => r.id === 'destination')),
+      'Erasmus Mundus lists destination mismatch requirement check for Australia'
+    );
+
+    const auAwardsResult = resultsAu.find((r) => r.scholarship.id === 'australia-awards');
+    assert(!!auAwardsResult, 'Australia Awards evaluated in matcher');
+    assert(
+      auAwardsResult?.overallStatus === 'Not Eligible',
+      'Australia Awards evaluates as "Not Eligible" due to closed deadline'
+    );
+    assert(
+      Boolean(auAwardsResult?.requirementsNotMet.some((r) => r.id === 'program-closed')),
+      'Australia Awards lists program-closed check'
+    );
+
+    // Profile for Germany
+    const profileDe: UserEligibilityProfile = {
+      ...profileAu,
+      preferredDestination: 'Germany',
+    };
+    const resultsDe = matchAllScholarships(profileDe);
+    const erasmusDeResult = resultsDe.find((r) => r.scholarship.id === 'erasmus-mundus');
+    assert(
+      Boolean(erasmusDeResult?.requirementsMet.some((r) => r.id === 'destination')),
+      'Erasmus Mundus lists destination requirement as met when destination is Germany'
+    );
+  }
+
   console.log('\n====================================================');
-  console.log('ALL SCHOLARSHIP AUDIT TESTS PASSED SUCCESSFULLY (11/11 SUITES)');
+  console.log('ALL SCHOLARSHIP AUDIT TESTS PASSED SUCCESSFULLY (14/14 SUITES)');
   console.log('====================================================');
 }
 

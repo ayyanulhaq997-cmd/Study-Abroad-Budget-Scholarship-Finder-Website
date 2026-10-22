@@ -46,6 +46,7 @@ import {
 import {
   evaluateEligibility,
   matchAllScholarships,
+  isCountryMatchingScholarship,
   UserEligibilityProfile,
 } from '../services/eligibilityMatcher';
 
@@ -95,11 +96,7 @@ export const ScholarshipFinderPage: React.FC<ScholarshipFinderPageProps> = ({
 
       // Country filter
       if (filterCountry !== 'All') {
-        const hasCountry =
-          s.hostCountries.includes('Multiple') ||
-          s.hostCountries.includes('Multiple European Countries') ||
-          s.hostCountries.some((c) => c.toLowerCase() === filterCountry.toLowerCase());
-        if (!hasCountry) return false;
+        if (!isCountryMatchingScholarship(s, filterCountry)) return false;
       }
 
       // Degree Level

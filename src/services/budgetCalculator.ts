@@ -36,6 +36,7 @@ export const DEFAULT_BUDGET_INPUT: BudgetInput = {
   exchangeRateToPKR: 305.50,
   isExchangeRateUserProvided: false,
   studyDurationYears: 2,
+  intendedDegreeLevel: 'Master',
   annualTuition: 0,
   annualLiving: 11904, // Official German Sperrkonto minimum requirement
   annualInsurance: 1440, // Public student health insurance

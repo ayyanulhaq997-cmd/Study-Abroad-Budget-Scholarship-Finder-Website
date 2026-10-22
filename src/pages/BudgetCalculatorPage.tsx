@@ -42,6 +42,7 @@ import {
   getPresetInput,
   sumItemizedPreDeparture,
 } from '../services/budgetCalculator';
+import { getActiveVerifiedScholarshipsForDestination } from '../services/eligibilityMatcher';
 import { PrintableReportModal } from '../components/PrintableReportModal';
 
 const LOCAL_STORAGE_KEY = 'globaledu_study_budget_v2';
@@ -242,17 +243,13 @@ export const BudgetCalculatorPage: React.FC = () => {
     input.expenseCurrency === activeCountry.currencyCode &&
     input.annualLiving < activeCountry.statutoryAnnualLivingProof;
 
-  // Filter active verified scholarships strictly matching the active destination country
+  // Filter active verified scholarships strictly matching the active destination country and degree level
   const matchingVerifiedScholarships = useMemo(() => {
-    return SCHOLARSHIPS_DATA.filter((s) => {
-      if (!s.isVerified || s.programStatus === 'Discontinued' || s.programStatus === 'Closed') return false;
-      const matchesCountry =
-        s.hostCountries.includes('Multiple') ||
-        s.hostCountries.includes('Multiple European Countries') ||
-        s.hostCountries.some((c) => c.toLowerCase() === activeCountry.name.toLowerCase());
-      return matchesCountry;
+    return getActiveVerifiedScholarshipsForDestination({
+      destination: activeCountry.name,
+      degreeLevel: input.intendedDegreeLevel || (input.studyDurationYears >= 4 ? 'Bachelor' : 'Master'),
     });
-  }, [activeCountry]);
+  }, [activeCountry.name, input.intendedDegreeLevel, input.studyDurationYears]);
 
   // Handle itemized pre-departure change and update oneTimeExpenses total
   const handleItemizedChange = (field: keyof typeof input.preDepartureCosts, value: number) => {
@@ -478,6 +475,42 @@ export const BudgetCalculatorPage: React.FC = () => {
                     {yearVal} {yearVal === 1 ? 'Year (e.g. UK MSc)' : yearVal === 2 ? 'Years (Master’s)' : 'Years'}
                   </button>
                 ))}
+              </div>
+            </div>
+
+            {/* Target Degree Level */}
+            <div>
+              <div className="flex justify-between items-center mb-1.5">
+                <label className="text-xs font-semibold text-slate-700">
+                  Target Degree Level
+                </label>
+                <span className="text-[11px] text-slate-500 font-medium">
+                  Filters destination scholarship eligibility
+                </span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { level: 'Master' as const, label: 'Master’s Degree' },
+                  { level: 'Bachelor' as const, label: 'Bachelor’s / Undergrad' },
+                  { level: 'PhD' as const, label: 'Doctoral / PhD' },
+                ].map(({ level, label }) => {
+                  const currentLevel = input.intendedDegreeLevel || (input.studyDurationYears >= 4 ? 'Bachelor' : 'Master');
+                  const isSelected = currentLevel === level;
+                  return (
+                    <button
+                      key={level}
+                      type="button"
+                      onClick={() => setInput({ ...input, intendedDegreeLevel: level })}
+                      className={`py-2 px-2 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-blue-700 text-white border-blue-700 shadow-2xs'
+                          : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -1071,15 +1104,50 @@ export const BudgetCalculatorPage: React.FC = () => {
                     <p className="font-semibold text-slate-800">
                       Verified Guidance for this Funding Gap ({formatCurrency(result.totalDegreeFundingGapBase, 'PKR')}):
                     </p>
-                    <ul className="list-disc pl-4 space-y-1 text-slate-600 text-[11px]">
+                    <ul className="list-disc pl-4 space-y-1.5 text-slate-600 text-[11px]">
                       {matchingVerifiedScholarships.length > 0 ? (
                         matchingVerifiedScholarships.slice(0, 2).map((sch) => (
-                          <li key={sch.id}>
-                            Explore verified scholarship: <strong>{sch.name}</strong> ({sch.fundingType}) by {sch.provider}.
+                          <li key={sch.id} className="space-y-0.5">
+                            <div>
+                              Explore verified scholarship: <strong>{sch.name}</strong> ({sch.fundingType}) by {sch.provider}.
+                            </div>
+                            <div className="text-[10px] text-slate-500">
+                              Published coverage: {sch.benefitsSummary}
+                            </div>
+                            {sch.programStatus === 'Awaiting Announcement' && (
+                              <div className="text-[10px] text-amber-700 italic">
+                                * {sch.applicationDeadlineNotice}
+                              </div>
+                            )}
                           </li>
                         ))
                       ) : (
-                        <li>Verify departmental graduate assistantships or institutional fee waivers directly with target universities.</li>
+                        <li className="space-y-1 list-none -ml-4">
+                          <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-700 text-xs">
+                            {activeCountry.id === 'australia' ? (
+                              <span>
+                                <strong>Australia Guidance:</strong> Australia Awards Master’s scholarships for Pakistan are closed for the 2027 intake (closed April 30, 2026; next intake expected February 2027). Unverified regional grants are segregated. Explore direct university fee remissions (such as UNSW Scientia Coursework or Melbourne Graduate Scholarship) or departmental research assistantships directly with Australian institutions.
+                              </span>
+                            ) : activeCountry.id === 'usa' ? (
+                              <span>
+                                <strong>US Guidance:</strong> The USEFP Fulbright 2027 intake cycle closed April 1, 2026 (2028 intake anticipated February 2027). For US graduate programs, check departmental Teaching (TA) or Research Assistantships (RA) directly with target universities, which frequently waive 100% tuition and provide monthly living stipends.
+                              </span>
+                            ) : activeCountry.id === 'canada' ? (
+                              <span>
+                                <strong>Canada Guidance:</strong> Vanier CGS is discontinued and succeeded by the Tri-Agency CGRS-D portal for doctoral candidates. For master’s and professional programs, verify institutional departmental packages (such as U of T Arts & Science base funding) or university entrance merit awards.
+                              </span>
+                            ) : (
+                              <span>
+                                <strong>Institutional Guidance:</strong> No centralized external government scholarships are currently open for this degree level and destination in our verified directory. Check university-administered merit scholarships or departmental assistantships directly.
+                              </span>
+                            )}
+                            {(input.intendedDegreeLevel === 'Bachelor' || (!input.intendedDegreeLevel && input.studyDurationYears >= 4)) && (
+                              <div className="mt-1.5 text-[10px] text-amber-800 bg-amber-50 p-1.5 rounded border border-amber-200">
+                                * Note: Most major government scholarship schemes (Chevening, Commonwealth, DAAD EPOS, Fulbright, Australia Awards, Erasmus Mundus) are strictly graduate (Master’s/PhD). For undergraduate study, verify university-specific entrance scholarships or bilateral agreements (e.g. Türkiye Bursları).
+                              </div>
+                            )}
+                          </div>
+                        </li>
                       )}
                       <li>
                         <strong>Work Permission ({activeCountry.name}):</strong> {activeCountry.partTimeWorkRights}.

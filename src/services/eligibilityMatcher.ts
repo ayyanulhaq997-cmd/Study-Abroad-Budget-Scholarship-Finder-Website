@@ -23,6 +23,180 @@ export interface UserEligibilityProfile {
   isPakistaniCitizen: boolean;
 }
 
+/**
+ * Set of recognized European destination names, country codes, and common aliases.
+ * Used for strict regional matching (e.g. Erasmus Mundus Joint Masters).
+ */
+export const EUROPEAN_DESTINATIONS = new Set([
+  'germany',
+  'de',
+  'deutschland',
+  'united kingdom',
+  'uk',
+  'gb',
+  'great britain',
+  'england',
+  'scotland',
+  'wales',
+  'france',
+  'fr',
+  'italy',
+  'it',
+  'spain',
+  'es',
+  'netherlands',
+  'nl',
+  'sweden',
+  'se',
+  'switzerland',
+  'ch',
+  'austria',
+  'at',
+  'belgium',
+  'be',
+  'norway',
+  'no',
+  'denmark',
+  'dk',
+  'finland',
+  'fi',
+  'ireland',
+  'ie',
+  'poland',
+  'pl',
+  'portugal',
+  'pt',
+  'czech republic',
+  'cz',
+  'czechia',
+  'hungary',
+  'hu',
+  'greece',
+  'gr',
+  'multiple european countries',
+]);
+
+/**
+ * Standardize country names to ensure clean matching across IDs and labels.
+ */
+export function normalizeCountryName(country: string): string {
+  const c = country.trim().toLowerCase();
+  if (c === 'usa' || c === 'us' || c === 'united states of america') return 'united states';
+  if (c === 'uk' || c === 'gb' || c === 'great britain') return 'united kingdom';
+  if (c === 'south-korea' || c === 'kr' || c === 'korea') return 'south korea';
+  return c;
+}
+
+/**
+ * Check if a destination is located in Europe.
+ */
+export function isEuropeanDestination(destination: string): boolean {
+  const norm = normalizeCountryName(destination);
+  return EUROPEAN_DESTINATIONS.has(norm);
+}
+
+/**
+ * Matches a destination country against a scholarship's hostCountries.
+ * 
+ * Rules:
+ * 1. If destination is 'All' or empty, always returns true.
+ * 2. Compares normalized destination against each hostCountry in scholarship.hostCountries.
+ * 3. Regional entries like 'Multiple European Countries' ONLY match verified European destinations.
+ *    They MUST NEVER match Australia, USA, Canada, South Korea, etc.
+ * 4. Generic 'Multiple' only matches if the scholarship has no regional exclusions.
+ */
+export function isCountryMatchingScholarship(
+  scholarship: Scholarship,
+  destination: string
+): boolean {
+  if (!destination || destination.trim().toLowerCase() === 'all') {
+    return true;
+  }
+
+  const normDest = normalizeCountryName(destination);
+
+  // Check direct country matches and regional rules
+  for (const host of scholarship.hostCountries) {
+    const normHost = normalizeCountryName(host);
+
+    if (normHost === normDest) {
+      return true;
+    }
+
+    // Regional European matching rule:
+    // Only matches if destination is a confirmed European country
+    if (normHost === 'multiple european countries') {
+      if (isEuropeanDestination(normDest)) {
+        return true;
+      }
+    }
+
+    // Generic 'Multiple' (if no regional restriction specified)
+    if (normHost === 'multiple' && !scholarship.hostCountries.some((h) => h.toLowerCase().includes('european'))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+export interface ActiveScholarshipFilterOptions {
+  destination: string; // e.g. 'Australia', 'Germany', 'uk', etc.
+  degreeLevel?: DegreeLevel; // e.g. 'Bachelor', 'Master', 'PhD'
+  subjectArea?: SubjectCategory;
+}
+
+/**
+ * Retrieves only active verified scholarships for a specific destination.
+ * Strictly excludes:
+ * - Scholarships with programStatus 'Closed' or 'Discontinued'
+ * - Unverified scholarships (isVerified: false or 'Not Yet Verified')
+ * - Destination mismatches (e.g. Erasmus Mundus for Australia)
+ * - Degree level mismatches (e.g. graduate-only scholarships for undergraduate/Bachelor)
+ */
+export function getActiveVerifiedScholarshipsForDestination(
+  options: ActiveScholarshipFilterOptions
+): Scholarship[] {
+  return SCHOLARSHIPS_DATA.filter((s) => {
+    // 1. Must be verified
+    if (!s.isVerified || s.programStatus === 'Not Yet Verified') {
+      return false;
+    }
+
+    // 2. Must not be Closed or Discontinued
+    if (s.programStatus === 'Closed' || s.programStatus === 'Discontinued') {
+      return false;
+    }
+
+    // 3. Must match destination using explicit country/regional rules
+    if (!isCountryMatchingScholarship(s, options.destination)) {
+      return false;
+    }
+
+    // 4. If degree level is specified and not 'Any', must match scholarship degreeLevels
+    if (options.degreeLevel && options.degreeLevel !== 'Any') {
+      const matchesDegree =
+        s.degreeLevels.includes(options.degreeLevel) ||
+        s.degreeLevels.includes('Any');
+      if (!matchesDegree) {
+        return false;
+      }
+    }
+
+    // 5. If subject area is specified and not 'All Subjects', must match
+    if (options.subjectArea && options.subjectArea !== 'All Subjects') {
+      const matchesSubject =
+        s.subjectAreas.includes('All Subjects') ||
+        s.subjectAreas.includes(options.subjectArea);
+      if (!matchesSubject) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+}
+
 export function evaluateEligibility(
   profile: UserEligibilityProfile,
   scholarship: Scholarship
@@ -87,13 +261,10 @@ export function evaluateEligibility(
   }
 
   // Check 4: Destination Country Match
-  const destinationMatches =
-    profile.preferredDestination === 'All' ||
-    scholarship.hostCountries.includes('Multiple') ||
-    scholarship.hostCountries.includes('Multiple European Countries') ||
-    scholarship.hostCountries.some(
-      (c) => c.toLowerCase() === profile.preferredDestination.toLowerCase()
-    );
+  const destinationMatches = isCountryMatchingScholarship(
+    scholarship,
+    profile.preferredDestination
+  );
 
   if (destinationMatches) {
     requirementsMet.push({

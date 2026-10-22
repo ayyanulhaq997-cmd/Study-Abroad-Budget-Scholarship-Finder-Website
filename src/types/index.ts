@@ -154,6 +154,7 @@ export interface BudgetInput {
   exchangeRateToPKR: number | null; // e.g. 1 Destination Currency = X PKR. null or <= 0 means conversion unavailable
   isExchangeRateUserProvided?: boolean;
   studyDurationYears: number;
+  intendedDegreeLevel?: DegreeLevel; // e.g. 'Master' | 'Bachelor' | 'PhD' | 'Any'
   annualTuition: number;
   annualLiving: number;
   annualInsurance: number;
