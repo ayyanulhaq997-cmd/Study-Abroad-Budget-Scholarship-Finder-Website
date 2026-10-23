@@ -163,6 +163,24 @@ function runScholarshipAuditTests() {
       Boolean(daad?.officialUrl.includes('daad.de')),
       'DAAD EPOS cites official DAAD scholarship portal'
     );
+    assert(
+      daad?.officialUrl ===
+        'https://www2.daad.de/deutschland/stipendium/datenbank/en/21148-scholarship-database?detail=50076777',
+      'DAAD EPOS cites exact corrected official database URL (stipendium, singular, with detail=50076777)'
+    );
+    assert(
+      daad?.verification?.sourceUrl ===
+        'https://www2.daad.de/deutschland/stipendium/datenbank/en/21148-scholarship-database?detail=50076777',
+      'DAAD EPOS verification sourceUrl matches official database URL'
+    );
+    assert(
+      !daad?.degreeLevels.includes('Bachelor'),
+      'DAAD EPOS excludes undergraduate (Bachelor) degree applicants'
+    );
+    assert(
+      Boolean(daad?.degreeLevels.includes('Master') && daad?.degreeLevels.includes('Doctoral')),
+      'DAAD EPOS is designated strictly for postgraduate applicants (Master & Doctoral)'
+    );
   }
 
   console.log('\nTest Suite 6: Confirmed vs. Conditional Benefits Distinction');
