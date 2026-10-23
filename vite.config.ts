@@ -85,7 +85,7 @@ export default defineConfig(() => {
                 const recipient =
                   process.env.NOTIFICATION_EMAIL ||
                   process.env.VITE_CONTACT_EMAIL ||
-                  'muhammadsaleem.76588@gmail.com';
+                  'zolly9130@gmail.com';
 
                 if (resendKey) {
                   const fromAddress =

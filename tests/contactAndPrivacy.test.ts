@@ -10,6 +10,12 @@ import {
   MONITORED_EDITORIAL_EMAIL,
   ALLOWED_CATEGORIES,
 } from '../src/services/contactService.ts';
+import contactApiHandler from '../api/contact.ts';
+import {
+  calculateBudget,
+  sumItemizedPreDeparture,
+  DEFAULT_BUDGET_INPUT,
+} from '../src/services/budgetCalculator.ts';
 
 function assert(condition: boolean, message: string) {
   if (!condition) {
@@ -32,8 +38,8 @@ console.log('Test Suite 1: Contact Form Input Validation');
   // Valid input
   const valid = validateContactForm(
     {
-      name: 'Muhammad Saleem',
-      email: 'muhammadsaleem.76588@gmail.com',
+      name: 'Editorial Team',
+      email: 'zolly9130@gmail.com',
       category: 'Report an Outdated/Unverified Scholarship',
       subject: 'DAAD EPOS Deadline update',
       message: 'Please check the latest DAAD scholarship bulletin at https://daad.de for 2026/2027.',
@@ -134,16 +140,16 @@ console.log('\nTest Suite 3: Clickable Mailto Link & Monitored Email');
 
   const mailto = createMailtoLink(
     {
-      name: 'Muhammad Saleem',
-      email: 'muhammadsaleem.76588@gmail.com',
+      name: 'Editorial Team',
+      email: 'zolly9130@gmail.com',
       category: 'Suggest a Verified Scholarship Scheme',
       subject: 'TUM Fee Notice',
       message: 'Official source: https://tum.de',
     },
-    'muhammadsaleem.76588@gmail.com'
+    'zolly9130@gmail.com'
   );
 
-  assert(mailto.startsWith('mailto:muhammadsaleem.76588@gmail.com'), 'Mailto link targets monitored recipient');
+  assert(mailto.startsWith('mailto:zolly9130@gmail.com'), 'Mailto link targets monitored recipient');
   assert(mailto.includes(encodeURIComponent('[GlobalEdu] Suggest a Verified Scholarship Scheme: TUM Fee Notice')), 'Mailto link encodes subject line');
   assert(mailto.includes(encodeURIComponent('Official source: https://tum.de')), 'Mailto link encodes message body');
 }
@@ -249,8 +255,8 @@ console.log('\nTest Suite 6: Explicit JSON Success Requirement in submitContactF
     });
 
   const testPayload = {
-    name: 'Muhammad Saleem',
-    email: 'muhammadsaleem.76588@gmail.com',
+    name: 'Editorial Team',
+    email: 'zolly9130@gmail.com',
     category: 'General Calculator Feedback',
     message: 'Testing explicit JSON confirmation check.',
   };
@@ -322,6 +328,235 @@ console.log('\nTest Suite 7: Vercel Routing Regex Integrity');
   }
 }
 
+// Helper to create mock request and response for Serverless API testing
+function createMockReqRes(options: {
+  method?: string;
+  headers?: Record<string, string>;
+  body?: any;
+  ip?: string;
+}) {
+  let statusCode = 200;
+  let responseData: any = null;
+  const responseHeaders: Record<string, string> = {};
+
+  const req: any = {
+    method: options.method || 'POST',
+    headers: options.headers || { 'content-type': 'application/json' },
+    body: options.body,
+    socket: { remoteAddress: options.ip || '127.0.0.1' },
+  };
+
+  const res: any = {
+    status(code: number) {
+      statusCode = code;
+      return res;
+    },
+    setHeader(name: string, value: string) {
+      responseHeaders[name.toLowerCase()] = value;
+      return res;
+    },
+    json(data: any) {
+      responseData = data;
+      return res;
+    },
+  };
+
+  return {
+    req,
+    res,
+    getStatusCode: () => statusCode,
+    getData: () => responseData,
+    getHeader: (name: string) => responseHeaders[name.toLowerCase()],
+  };
+}
+
+// Test Suite 8: Serverless API Handler Unit & Security Tests
+console.log('\nTest Suite 8: Serverless API Handler Unit & Security Tests');
+{
+  // 1. Rejects GET requests with 405 Method Not Allowed
+  {
+    const mock = createMockReqRes({ method: 'GET' });
+    await contactApiHandler(mock.req, mock.res);
+    assert(mock.getStatusCode() === 405, 'Rejects GET request with HTTP 405');
+    assert(mock.getHeader('allow') === 'POST', 'Sets Allow: POST header on 405');
+  }
+
+  // 2. Rejects unsupported Content-Type with 415
+  {
+    const mock = createMockReqRes({
+      headers: { 'content-type': 'text/html' },
+      body: 'test',
+    });
+    await contactApiHandler(mock.req, mock.res);
+    assert(mock.getStatusCode() === 415, 'Rejects text/html Content-Type with HTTP 415');
+  }
+
+  // 3. Rejects malformed JSON body with 400
+  {
+    const mock = createMockReqRes({
+      body: '{ not valid json }',
+    });
+    await contactApiHandler(mock.req, mock.res);
+    assert(mock.getStatusCode() === 400, 'Rejects malformed JSON body with HTTP 400');
+  }
+
+  // 4. Rejects honeypot spam bot with 400
+  {
+    const mock = createMockReqRes({
+      body: {
+        name: 'Bot User',
+        email: 'bot@spam.com',
+        category: 'Other',
+        message: 'Valid length message exceeding fifteen characters.',
+        hp_website: 'http://spam-link.ru',
+      },
+      ip: '192.168.1.100',
+    });
+    await contactApiHandler(mock.req, mock.res);
+    assert(mock.getStatusCode() === 400, 'Honeypot filled submission rejected with HTTP 400');
+    assert(mock.getData().error.includes('spam'), 'Reports automated spam detected');
+  }
+
+  // 5. Server-side length validation: short name (< 2 chars)
+  {
+    const mock = createMockReqRes({
+      body: {
+        name: 'A',
+        email: 'user@example.com',
+        category: 'Other',
+        message: 'Valid length message exceeding fifteen characters.',
+      },
+      ip: '192.168.1.101',
+    });
+    await contactApiHandler(mock.req, mock.res);
+    assert(mock.getStatusCode() === 400, 'Short name (< 2 chars) rejected with HTTP 400');
+  }
+
+  // 6. Server-side length validation: oversized name (> 100 chars)
+  {
+    const mock = createMockReqRes({
+      body: {
+        name: 'A'.repeat(101),
+        email: 'user@example.com',
+        category: 'Other',
+        message: 'Valid length message exceeding fifteen characters.',
+      },
+      ip: '192.168.1.102',
+    });
+    await contactApiHandler(mock.req, mock.res);
+    assert(mock.getStatusCode() === 400, 'Oversized name (> 100 chars) rejected with HTTP 400');
+  }
+
+  // 7. Server-side length validation: short message (< 15 chars)
+  {
+    const mock = createMockReqRes({
+      body: {
+        name: 'Muhammad Saleem',
+        email: 'user@example.com',
+        category: 'Other',
+        message: 'Too short',
+      },
+      ip: '192.168.1.103',
+    });
+    await contactApiHandler(mock.req, mock.res);
+    assert(mock.getStatusCode() === 400, 'Short message (< 15 chars) rejected with HTTP 400');
+  }
+
+  // 8. Server-side length validation: oversized message (> 3000 chars)
+  {
+    const mock = createMockReqRes({
+      body: {
+        name: 'Muhammad Saleem',
+        email: 'user@example.com',
+        category: 'Other',
+        message: 'M'.repeat(3001),
+      },
+      ip: '192.168.1.104',
+    });
+    await contactApiHandler(mock.req, mock.res);
+    assert(mock.getStatusCode() === 400, 'Oversized message (> 3000 chars) rejected with HTTP 400');
+  }
+
+  // 9. Unconfigured email service returns HTTP 503 with editorial recipient without crashing
+  {
+    const mock = createMockReqRes({
+      body: {
+        name: 'Muhammad Saleem',
+        email: 'muhammadsaleem.76588@gmail.com',
+        category: 'Other',
+        message: 'Valid length message exceeding fifteen characters for unconfigured test.',
+      },
+      ip: '192.168.1.105',
+    });
+    await contactApiHandler(mock.req, mock.res);
+    assert(mock.getStatusCode() === 503, 'Unconfigured provider returns HTTP 503');
+    assert(mock.getData().success === false, 'Returns success: false when unconfigured');
+    assert(Boolean(mock.getData().recipientEmail), 'Provides recipient email for direct fallback');
+  }
+
+  // 10. Rate limiting test: IP sends more than 5 requests in window
+  {
+    const testIp = '10.0.0.99';
+    let lastStatus = 200;
+
+    for (let i = 0; i < 6; i++) {
+      const mock = createMockReqRes({
+        body: {
+          name: 'Rate Limit Tester',
+          email: 'ratelimit@example.com',
+          category: 'Other',
+          message: 'Valid length message exceeding fifteen characters for rate limit testing.',
+        },
+        ip: testIp,
+      });
+      await contactApiHandler(mock.req, mock.res);
+      lastStatus = mock.getStatusCode();
+      if (i === 5) {
+        assert(lastStatus === 429, 'Sixth request from same IP is rate-limited with HTTP 429');
+        assert(Boolean(mock.getHeader('retry-after')), 'Sets Retry-After header on HTTP 429');
+      }
+    }
+  }
+}
+
+// Test Suite 9: Financial Calculator Defensive Clamping & Parsing
+console.log('\nTest Suite 9: Financial Calculator Defensive Clamping & Parsing');
+{
+  // 1. Negative cost inputs are safely clamped to 0
+  const negativeInput = {
+    ...DEFAULT_BUDGET_INPUT,
+    annualTuition: -5000,
+    annualLiving: -2000,
+    annualInsurance: -500,
+    annualSemesterFees: -100,
+  };
+  const negResult = calculateBudget(negativeInput);
+  assert(negResult.annualRecurringCostForeign === 0, 'Negative tuition and living costs clamped to 0');
+  assert(negResult.totalDegreeFundingGapBase >= 0, 'Funding gap remains non-negative with negative inputs');
+
+  // 2. Negative available funds clamped to 0
+  const negFundsInput = {
+    ...DEFAULT_BUDGET_INPUT,
+    availableOneTimeFundsPKR: -1000000,
+    availableAnnualBudgetPKR: -500000,
+  };
+  const negFundsResult = calculateBudget(negFundsInput);
+  assert(negFundsResult.totalAvailableResourcesBase === 0, 'Negative available resources clamped to 0');
+
+  // 3. Negative itemized pre-departure costs clamped to 0
+  const negPreDeparture = {
+    documentAttestationPKR: -15000,
+    ieltsExamFeePKR: -65000,
+    universityApplicationFeesPKR: -45000,
+    visaAndBiometricFeePKR: -120000,
+    airfarePKR: -180000,
+    initialHousingDepositPKR: -250000,
+    miscellaneousSetupPKR: -50000,
+  };
+  const sum = sumItemizedPreDeparture(negPreDeparture);
+  assert(sum === 0, 'Negative itemized pre-departure costs clamped to 0');
+}
+
 console.log('\n====================================================');
-console.log('ALL CONTACT & PRIVACY TESTS PASSED (7/7 SUITES)');
+console.log('ALL CONTACT & PRIVACY TESTS PASSED (9/9 SUITES)');
 console.log('====================================================');

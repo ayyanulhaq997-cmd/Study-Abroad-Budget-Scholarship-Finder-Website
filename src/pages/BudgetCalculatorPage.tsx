@@ -55,17 +55,18 @@ export const BudgetCalculatorPage: React.FC = () => {
       const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Ensure new fields exist
-        return {
-          ...DEFAULT_BUDGET_INPUT,
-          ...parsed,
-          expenseCurrency: parsed.expenseCurrency || parsed.destinationCurrency || 'EUR',
-          annualTuition: parsed.annualTuition !== undefined ? parsed.annualTuition : (parsed.annualTuitionForeign || 0),
-          annualLiving: parsed.annualLiving !== undefined ? parsed.annualLiving : (parsed.annualLivingForeign || 11904),
-          annualInsurance: parsed.annualInsurance !== undefined ? parsed.annualInsurance : (parsed.annualHealthInsuranceForeign || 1440),
-          annualSemesterFees: parsed.annualSemesterFees !== undefined ? parsed.annualSemesterFees : (parsed.annualMiscellaneousForeign || 600),
-          oneTimeExpenses: parsed.oneTimeExpenses !== undefined ? parsed.oneTimeExpenses : DEFAULT_PRE_DEPARTURE_TOTAL_PKR,
-        };
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          return {
+            ...DEFAULT_BUDGET_INPUT,
+            ...parsed,
+            expenseCurrency: parsed.expenseCurrency || parsed.destinationCurrency || 'EUR',
+            annualTuition: Math.max(0, Number(parsed.annualTuition !== undefined ? parsed.annualTuition : (parsed.annualTuitionForeign || 0))),
+            annualLiving: Math.max(0, Number(parsed.annualLiving !== undefined ? parsed.annualLiving : (parsed.annualLivingForeign || 11904))),
+            annualInsurance: Math.max(0, Number(parsed.annualInsurance !== undefined ? parsed.annualInsurance : (parsed.annualHealthInsuranceForeign || 1440))),
+            annualSemesterFees: Math.max(0, Number(parsed.annualSemesterFees !== undefined ? parsed.annualSemesterFees : (parsed.annualMiscellaneousForeign || 600))),
+            oneTimeExpenses: Math.max(0, Number(parsed.oneTimeExpenses !== undefined ? parsed.oneTimeExpenses : DEFAULT_PRE_DEPARTURE_TOTAL_PKR)),
+          };
+        }
       }
     } catch (e) {
       console.error('Failed to parse saved budget', e);
@@ -78,7 +79,12 @@ export const BudgetCalculatorPage: React.FC = () => {
     try {
       const saved = localStorage.getItem(SAVED_PROFILES_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          return parsed.filter(
+            (p) => p && typeof p === 'object' && p.id && p.title && p.input && p.result
+          );
+        }
       }
     } catch {
       // Ignore

@@ -41,59 +41,156 @@ const LIMITS = {
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 
 // ==============================================================================
-// Server-Side Rate Limiter (Sliding Window per Client IP)
-// Protects Vercel serverless execution from automated submission bursts
+// Shared Rate Limiter (Upstash Redis with In-Memory Fallback)
+// Multi-instance distributed protection for Vercel serverless environments
 // ==============================================================================
 interface RateLimitRecord {
   count: number;
   resetAt: number;
 }
 
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
+const RATE_LIMIT_WINDOW_SECONDS = 600; // 10 minutes
+const RATE_LIMIT_WINDOW_MS = RATE_LIMIT_WINDOW_SECONDS * 1000;
 const MAX_REQUESTS_PER_WINDOW = 5; // Max 5 submissions per 10 minutes per IP
-const ipRateLimitStore = new Map<string, RateLimitRecord>();
+const localMemoryRateLimitStore = new Map<string, RateLimitRecord>();
 
-function isRateLimited(ip: string): { limited: boolean; retryAfterSeconds: number } {
+interface RateLimitResult {
+  limited: boolean;
+  retryAfterSeconds: number;
+  source: 'upstash' | 'in-memory-fallback' | 'in-memory-default';
+  isDegraded?: boolean;
+}
+
+/**
+ * Checks rate limit using Upstash Redis if configured; otherwise safely uses
+ * the in-memory sliding-window limiter.
+ */
+async function checkRateLimit(clientIp: string): Promise<RateLimitResult> {
+  const upstashUrl = process.env.UPSTASH_REDIS_REST_URL;
+  const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  // 1. If Upstash Redis is configured, execute distributed atomic pipeline
+  if (upstashUrl && upstashToken) {
+    try {
+      const sanitizedIp = clientIp.replace(/[^a-zA-Z0-9_.:-]/g, '');
+      const key = `ratelimit:contact:${sanitizedIp}`;
+
+      const response = await fetch(`${upstashUrl}/pipeline`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${upstashToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify([
+          ['INCR', key],
+          ['EXPIRE', key, RATE_LIMIT_WINDOW_SECONDS, 'NX'],
+          ['TTL', key],
+        ]),
+        signal: AbortSignal.timeout(3500),
+      });
+
+      if (response.ok) {
+        const results = await response.json();
+        // results is an array of command returns: [{ result: count }, { result: 1 }, { result: ttl }]
+        const count = typeof results?.[0]?.result === 'number' ? results[0].result : 1;
+        const ttl = typeof results?.[2]?.result === 'number' && results[2].result > 0
+          ? results[2].result
+          : RATE_LIMIT_WINDOW_SECONDS;
+
+        if (count > MAX_REQUESTS_PER_WINDOW) {
+          return {
+            limited: true,
+            retryAfterSeconds: ttl,
+            source: 'upstash',
+          };
+        }
+
+        return {
+          limited: false,
+          retryAfterSeconds: 0,
+          source: 'upstash',
+        };
+      } else {
+        console.warn('Upstash rate limit service returned non-OK status:', response.status);
+      }
+    } catch (upstashErr) {
+      console.warn('Upstash rate limit service unavailable, falling back to local limiter');
+      // Fall through to in-memory fallback with degraded flag
+      const fallback = checkLocalMemoryRateLimit(clientIp);
+      return {
+        ...fallback,
+        source: 'in-memory-fallback',
+        isDegraded: true,
+      };
+    }
+  }
+
+  // 2. Default In-Memory Limiter when Upstash is not configured
+  return checkLocalMemoryRateLimit(clientIp);
+}
+
+function checkLocalMemoryRateLimit(clientIp: string): RateLimitResult {
   const now = Date.now();
 
-  // Prune expired records periodically to prevent unbounded memory growth
-  if (ipRateLimitStore.size > 1000) {
-    for (const [key, record] of ipRateLimitStore.entries()) {
+  // Prune expired records periodically
+  if (localMemoryRateLimitStore.size > 1000) {
+    for (const [key, record] of localMemoryRateLimitStore.entries()) {
       if (now > record.resetAt) {
-        ipRateLimitStore.delete(key);
+        localMemoryRateLimitStore.delete(key);
       }
     }
   }
 
-  const existing = ipRateLimitStore.get(ip);
+  const existing = localMemoryRateLimitStore.get(clientIp);
   if (!existing || now > existing.resetAt) {
-    ipRateLimitStore.set(ip, {
+    localMemoryRateLimitStore.set(clientIp, {
       count: 1,
       resetAt: now + RATE_LIMIT_WINDOW_MS,
     });
-    return { limited: false, retryAfterSeconds: 0 };
+    return { limited: false, retryAfterSeconds: 0, source: 'in-memory-default' };
   }
 
   if (existing.count >= MAX_REQUESTS_PER_WINDOW) {
     const retryAfterSeconds = Math.max(1, Math.ceil((existing.resetAt - now) / 1000));
-    return { limited: true, retryAfterSeconds };
+    return { limited: true, retryAfterSeconds, source: 'in-memory-default' };
   }
 
   existing.count += 1;
-  return { limited: false, retryAfterSeconds: 0 };
+  return { limited: false, retryAfterSeconds: 0, source: 'in-memory-default' };
 }
 
+/**
+ * Extracts client IP using platform-authenticated metadata where available.
+ * Prioritizes Vercel's edge proxy header over client-supplied headers.
+ */
 function extractClientIp(req: ContactApiRequest): string {
-  const xForwardedFor = req.headers['x-forwarded-for'];
-  if (typeof xForwardedFor === 'string' && xForwardedFor.trim().length > 0) {
-    // Return first IP before comma
-    const firstIp = xForwardedFor.split(',')[0].trim();
+  // 1. Vercel Edge Proxy header (authenticated, cannot be spoofed by client)
+  const vercelIp = req.headers['x-vercel-forwarded-for'];
+  if (typeof vercelIp === 'string' && vercelIp.trim().length > 0) {
+    const firstIp = vercelIp.split(',')[0].trim();
     if (firstIp) return firstIp;
   }
-  const xRealIp = req.headers['x-real-ip'];
-  if (typeof xRealIp === 'string' && xRealIp.trim().length > 0) {
-    return xRealIp.trim();
+
+  // 2. Cloudflare Connecting IP (authenticated on Cloudflare setups)
+  const cfIp = req.headers['cf-connecting-ip'];
+  if (typeof cfIp === 'string' && cfIp.trim().length > 0) {
+    return cfIp.trim();
   }
+
+  // 3. Real IP header (from trusted reverse proxies)
+  const realIp = req.headers['x-real-ip'];
+  if (typeof realIp === 'string' && realIp.trim().length > 0) {
+    return realIp.trim();
+  }
+
+  // 4. Standard Forwarded header (fallback)
+  const fwd = req.headers['x-forwarded-for'];
+  if (typeof fwd === 'string' && fwd.trim().length > 0) {
+    const firstIp = fwd.split(',')[0].trim();
+    if (firstIp) return firstIp;
+  }
+
+  // 5. Socket remote address
   return req.socket?.remoteAddress || '127.0.0.1';
 }
 
@@ -101,13 +198,13 @@ function extractClientIp(req: ContactApiRequest): string {
  * Serverless contact form endpoint for GlobalEdu.
  *
  * Security & Reliability Features:
- * 1. Strict HTTP POST enforcement
- * 2. Payload size bounds & safe JSON parsing
- * 3. Client IP rate limiting (5 req / 10 min window)
- * 4. Honeypot automated bot trap
- * 5. Server-side minimum & maximum lengths for name, email, subject, category, message
- * 6. Production-valid Resend dispatch configuration with explicit delivery status reporting
- * 7. Zero secret exposure in responses or logs
+ * 1. Strict HTTP POST enforcement & Content-Type validation
+ * 2. Payload size bounds (15 KB max) & safe JSON parsing
+ * 3. Shared Upstash Redis rate limiting with safe in-memory fallback
+ * 4. Honeypot automated bot trap (hp_website)
+ * 5. Strict server-side field length bounds and RFC email validation
+ * 6. Production-valid Resend dispatch configuration with explicit dispatch status
+ * 7. Zero secret exposure in responses, logs, or error dumps
  */
 export default async function handler(req: ContactApiRequest, res: ContactApiResponse) {
   // 1. Enforce HTTP POST
@@ -119,18 +216,33 @@ export default async function handler(req: ContactApiRequest, res: ContactApiRes
     });
   }
 
-  // 2. Client IP Rate Limiting
-  const clientIp = extractClientIp(req);
-  const { limited, retryAfterSeconds } = isRateLimited(clientIp);
-  if (limited) {
-    res.setHeader('Retry-After', String(retryAfterSeconds));
-    return res.status(429).json({
+  // 2. Validate Content-Type
+  const contentType = (req.headers['content-type'] || '').toLowerCase();
+  if (contentType && !contentType.includes('application/json')) {
+    return res.status(415).json({
       success: false,
-      error: `Too many submissions from this connection. Please wait ${retryAfterSeconds} seconds before sending another message, or email us directly.`,
+      error: 'Unsupported Media Type. Request must have Content-Type: application/json.',
     });
   }
 
-  // 3. Safe Request Body Parsing
+  // 3. Client IP Rate Limiting (Upstash Redis shared or in-memory fallback)
+  const clientIp = extractClientIp(req);
+  const rateLimit = await checkRateLimit(clientIp);
+
+  if (rateLimit.isDegraded) {
+    res.setHeader('X-RateLimit-Degraded', 'true');
+  }
+  res.setHeader('X-RateLimit-Source', rateLimit.source);
+
+  if (rateLimit.limited) {
+    res.setHeader('Retry-After', String(rateLimit.retryAfterSeconds));
+    return res.status(429).json({
+      success: false,
+      error: `Too many submissions from this connection. Please wait ${rateLimit.retryAfterSeconds} seconds before sending another message, or email us directly.`,
+    });
+  }
+
+  // 4. Safe Request Body Parsing & Size Limit
   let payload: any = req.body;
   if (typeof payload === 'string') {
     if (payload.length > LIMITS.MAX_PAYLOAD_BYTES) {
@@ -158,7 +270,7 @@ export default async function handler(req: ContactApiRequest, res: ContactApiRes
 
   const { name, email, category, subject, message, hp_website } = payload;
 
-  // 4. Spam detection: hidden honeypot field
+  // 5. Spam detection: hidden honeypot field
   if (hp_website && (typeof hp_website !== 'string' || hp_website.trim().length > 0)) {
     return res.status(400).json({
       success: false,
@@ -166,7 +278,7 @@ export default async function handler(req: ContactApiRequest, res: ContactApiRes
     });
   }
 
-  // 5. Server-side field validation & maximum lengths
+  // 6. Server-side field validation & maximum lengths
   // Name
   if (!name || typeof name !== 'string' || name.trim().length < LIMITS.NAME_MIN) {
     return res.status(400).json({
@@ -229,18 +341,22 @@ export default async function handler(req: ContactApiRequest, res: ContactApiRes
   }
 
   // Destination configuration
-  const recipientEmail =
+  // The internal notification recipient can be completely different from the public contact email
+  const notificationRecipient =
     process.env.NOTIFICATION_EMAIL ||
     process.env.VITE_CONTACT_EMAIL ||
-    'muhammadsaleem.76588@gmail.com';
+    'zolly9130@gmail.com';
+
+  const publicContactEmail =
+    process.env.VITE_CONTACT_EMAIL || 'zolly9130@gmail.com';
 
   const resendApiKey = process.env.RESEND_API_KEY;
   const forwardWebhook = process.env.CONTACT_FORWARD_URL;
 
-  // 6. Resend Email Dispatch (if configured)
+  // 7. Resend Email Dispatch (if configured)
   if (resendApiKey) {
     // In production, users should configure RESEND_FROM_EMAIL with their verified custom domain.
-    // For initial sandbox testing, fallback to onboarding@resend.dev (restricted to account owner).
+    // Sandbox default: onboarding@resend.dev (restricted to the account owner's email address).
     const fromAddress =
       process.env.RESEND_FROM_EMAIL || 'GlobalEdu Contact <onboarding@resend.dev>';
 
@@ -253,11 +369,12 @@ export default async function handler(req: ContactApiRequest, res: ContactApiRes
         },
         body: JSON.stringify({
           from: fromAddress,
-          to: [recipientEmail],
+          to: [notificationRecipient],
           reply_to: cleanEmail,
           subject: `[GlobalEdu] ${cleanCategory}: ${cleanSubject || 'New Verification Submission'}`,
           text: `From: ${name.trim()} (${cleanEmail})\nTopic: ${cleanCategory}\nSubject: ${cleanSubject || 'N/A'}\n\nMessage Details:\n${message.trim()}`,
         }),
+        signal: AbortSignal.timeout(5000),
       });
 
       let resendData: any = {};
@@ -268,7 +385,7 @@ export default async function handler(req: ContactApiRequest, res: ContactApiRes
       }
 
       if (response.ok && resendData && resendData.id) {
-        // Do NOT claim "delivered to mailbox" — accurately report acceptance into dispatch queue
+        // Accurately report acceptance into dispatch queue without claiming guaranteed mailbox delivery
         return res.status(200).json({
           success: true,
           message: 'Submission received and accepted into the editorial dispatch queue.',
@@ -277,25 +394,25 @@ export default async function handler(req: ContactApiRequest, res: ContactApiRes
         });
       } else {
         // Log sanitized error status without exposing API key
-        console.error('Resend delivery provider rejected submission:', response.status);
+        console.error('Resend delivery provider rejected submission HTTP status:', response.status);
         const providerError =
           (resendData && typeof resendData.message === 'string' && resendData.message) ||
-          'Email dispatch provider rejected the message. Please contact editorial email directly.';
+          'Email dispatch provider rejected the message. For production, verify your domain in Resend and set RESEND_FROM_EMAIL.';
         return res.status(502).json({
           success: false,
           error: providerError,
         });
       }
     } catch (dispatchError) {
-      console.error('Email dispatch network error');
+      console.error('Email dispatch timeout or network failure');
       return res.status(500).json({
         success: false,
-        error: 'Failed to reach dispatch service. Please use direct email.',
+        error: 'Failed to reach email dispatch provider. Please use the direct email link.',
       });
     }
   }
 
-  // 7. Webhook Forwarding (if configured)
+  // 8. Webhook Forwarding (if configured)
   if (forwardWebhook) {
     try {
       const fwdResponse = await fetch(forwardWebhook, {
@@ -309,6 +426,7 @@ export default async function handler(req: ContactApiRequest, res: ContactApiRes
           message: message.trim(),
           timestamp: new Date().toISOString(),
         }),
+        signal: AbortSignal.timeout(5000),
       });
 
       if (fwdResponse.ok) {
@@ -323,13 +441,13 @@ export default async function handler(req: ContactApiRequest, res: ContactApiRes
     }
   }
 
-  // 8. Unconfigured Service State
+  // 9. Unconfigured Service State
   // Accurately reports that automated backend dispatch is not yet configured on this deployment.
   return res.status(503).json({
     success: false,
     error:
       'Contact submission service is not currently connected to an active email provider (e.g. RESEND_API_KEY or VITE_CONTACT_FORM_ENDPOINT). Please contact the editorial team directly at ' +
-      recipientEmail,
-    recipientEmail,
+      publicContactEmail,
+    recipientEmail: publicContactEmail,
   });
 }

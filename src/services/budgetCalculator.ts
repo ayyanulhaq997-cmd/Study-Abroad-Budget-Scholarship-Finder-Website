@@ -110,14 +110,18 @@ export function formatPakistaniDenominations(amountPKR: number | null | undefine
  */
 export function sumItemizedPreDeparture(pre: PreDepartureCosts): number {
   if (!pre) return 0;
+  const safe = (val: any) => {
+    const num = Number(val);
+    return !isNaN(num) && isFinite(num) && num > 0 ? num : 0;
+  };
   return (
-    Number(pre.documentAttestationPKR || 0) +
-    Number(pre.ieltsExamFeePKR || 0) +
-    Number(pre.universityApplicationFeesPKR || 0) +
-    Number(pre.visaAndBiometricFeePKR || 0) +
-    Number(pre.airfarePKR || 0) +
-    Number(pre.initialHousingDepositPKR || 0) +
-    Number(pre.miscellaneousSetupPKR || 0)
+    safe(pre.documentAttestationPKR) +
+    safe(pre.ieltsExamFeePKR) +
+    safe(pre.universityApplicationFeesPKR) +
+    safe(pre.visaAndBiometricFeePKR) +
+    safe(pre.airfarePKR) +
+    safe(pre.initialHousingDepositPKR) +
+    safe(pre.miscellaneousSetupPKR)
   );
 }
 
@@ -158,21 +162,30 @@ export function calculateBudget(
   const years = Math.max(1, Math.min(10, input.studyDurationYears || 1));
 
   // 1. Resolve Annual Inputs (Tuition, Living, Insurance, Semester Fees)
-  const tuition = Number(
-    input.annualTuition !== undefined ? input.annualTuition : input.annualTuitionForeign || 0
+  const safeNumber = (val: any, fallback: number = 0): number => {
+    const num = Number(val !== undefined && val !== null ? val : fallback);
+    return !isNaN(num) && isFinite(num) && num > 0 ? num : 0;
+  };
+
+  const tuition = safeNumber(
+    input.annualTuition !== undefined ? input.annualTuition : input.annualTuitionForeign,
+    0
   );
-  const living = Number(
-    input.annualLiving !== undefined ? input.annualLiving : input.annualLivingForeign || 0
+  const living = safeNumber(
+    input.annualLiving !== undefined ? input.annualLiving : input.annualLivingForeign,
+    0
   );
-  const insurance = Number(
+  const insurance = safeNumber(
     input.annualInsurance !== undefined
       ? input.annualInsurance
-      : input.annualHealthInsuranceForeign || 0
+      : input.annualHealthInsuranceForeign,
+    0
   );
-  const semesterFees = Number(
+  const semesterFees = safeNumber(
     input.annualSemesterFees !== undefined
       ? input.annualSemesterFees
-      : input.annualMiscellaneousForeign || 0
+      : input.annualMiscellaneousForeign,
+    0
   );
 
   // Core Rule 1: annualRecurringCost = annualTuition + annualLiving + annualInsurance + annualSemesterFees
@@ -286,8 +299,8 @@ export function calculateBudget(
   }
 
   // 5. Core Rule 4: Total available resources = available one-time funds + (annual sponsorship * studyDurationYears)
-  const oneTimeAvailable = Number(input.availableOneTimeFundsPKR || 0);
-  const annualAvailable = Number(input.availableAnnualBudgetPKR || 0);
+  const oneTimeAvailable = safeNumber(input.availableOneTimeFundsPKR, 0);
+  const annualAvailable = safeNumber(input.availableAnnualBudgetPKR, 0);
   const totalAvailableResourcesBase = oneTimeAvailable + annualAvailable * years;
   const cashAvailableBeforeDepartureBase = oneTimeAvailable;
 

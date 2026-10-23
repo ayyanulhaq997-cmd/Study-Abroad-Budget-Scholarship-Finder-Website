@@ -43,7 +43,7 @@ const getEnv = (key: string): string | undefined => {
 };
 
 export const MONITORED_EDITORIAL_EMAIL =
-  getEnv('VITE_CONTACT_EMAIL') || 'muhammadsaleem.76588@gmail.com';
+  getEnv('VITE_CONTACT_EMAIL') || 'zolly9130@gmail.com';
 
 const EMAIL_REGEX = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
 

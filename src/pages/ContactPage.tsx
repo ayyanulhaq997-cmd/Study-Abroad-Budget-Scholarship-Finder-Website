@@ -175,12 +175,14 @@ export const ContactPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label htmlFor="contact_name" className="block text-xs font-semibold text-slate-700 mb-1">
                   Your Full Name *
                 </label>
                 <input
+                  id="contact_name"
                   type="text"
                   required
+                  aria-required="true"
                   disabled={isSubmitting}
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -190,12 +192,14 @@ export const ContactPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label htmlFor="contact_email" className="block text-xs font-semibold text-slate-700 mb-1">
                   Email Address *
                 </label>
                 <input
+                  id="contact_email"
                   type="email"
                   required
+                  aria-required="true"
                   disabled={isSubmitting}
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
@@ -205,10 +209,11 @@ export const ContactPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label htmlFor="contact_category" className="block text-xs font-semibold text-slate-700 mb-1">
                   Topic Category
                 </label>
                 <select
+                  id="contact_category"
                   disabled={isSubmitting}
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
@@ -223,10 +228,11 @@ export const ContactPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label htmlFor="contact_subject" className="block text-xs font-semibold text-slate-700 mb-1">
                   Subject / University or Scheme Name
                 </label>
                 <input
+                  id="contact_subject"
                   type="text"
                   disabled={isSubmitting}
                   value={formData.subject}
@@ -237,11 +243,13 @@ export const ContactPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label htmlFor="contact_message" className="block text-xs font-semibold text-slate-700 mb-1">
                   Details & Official Source URL *
                 </label>
                 <textarea
+                  id="contact_message"
                   required
+                  aria-required="true"
                   rows={4}
                   disabled={isSubmitting}
                   value={formData.message}
