@@ -537,8 +537,114 @@ function runScholarshipAuditTests() {
     );
   }
 
+  console.log('\nTest Suite 15: FSc vs. Postgraduate Scope & October 23, 2026 Verification Audit');
+  {
+    // 1. All verified scholarships have been audited as of October 23, 2026
+    const verifiedScholarships = SCHOLARSHIPS_DATA.filter(
+      (s) => s.isVerified && s.id !== 'placeholder-unverified-sample'
+    );
+    for (const s of verifiedScholarships) {
+      assert(
+        s.lastVerifiedDate === 'October 23, 2026',
+        `${s.id} reflects actual verified date 'October 23, 2026'`
+      );
+      assert(
+        s.verification?.checkedAt === 'October 23, 2026',
+        `${s.id} verification.checkedAt reflects 'October 23, 2026'`
+      );
+    }
+
+    // 2. Unverified placeholder remains unverified
+    const placeholder = SCHOLARSHIPS_DATA.find((s) => s.id === 'placeholder-unverified-sample');
+    assert(
+      placeholder?.lastVerifiedDate === 'Not yet verified',
+      'Unverified placeholder retains "Not yet verified"'
+    );
+
+    // 3. Postgraduate scholarships strictly exclude Bachelor's degree
+    const postgraduateOnlyIds = [
+      'chevening-uk',
+      'commonwealth-masters-uk',
+      'daad-epos-germany',
+      'erasmus-mundus',
+      'gks-south-korea',
+      'kaist-scholarship-korea',
+      'fulbright-pakistan',
+      'australia-awards',
+    ];
+
+    for (const id of postgraduateOnlyIds) {
+      const s = SCHOLARSHIPS_DATA.find((item) => item.id === id);
+      assert(!!s, `Scholarship ${id} exists`);
+      assert(
+        !s?.degreeLevels.includes('Bachelor'),
+        `${id} strictly excludes Bachelor's level`
+      );
+      assert(
+        Boolean(
+          s?.notesForPakistaniStudents?.toLowerCase().includes('ineligible') ||
+            s?.notesForPakistaniStudents?.toLowerCase().includes('not eligible') ||
+            s?.notesForPakistaniStudents?.toLowerCase().includes('postgraduate')
+        ),
+        `${id} clearly documents postgraduate requirement and FSc ineligibility`
+      );
+    }
+
+    // 4. Türkiye Bursları includes Bachelor and provides separate criteria
+    const turkiye = SCHOLARSHIPS_DATA.find((s) => s.id === 'turkiye-burslari');
+    assert(
+      Boolean(turkiye?.degreeLevels.includes('Bachelor')),
+      'Türkiye Bursları includes Bachelor degree level'
+    );
+    assert(
+      Boolean(
+        turkiye?.eligibilityRequirements.some((r) =>
+          r.toLowerCase().includes('undergraduate track')
+        )
+      ),
+      'Türkiye Bursları defines explicit separate Undergraduate Track criteria'
+    );
+    assert(
+      Boolean(
+        turkiye?.eligibilityRequirements.some((r) =>
+          r.toLowerCase().includes('master')
+        )
+      ),
+      'Türkiye Bursları defines explicit separate Master’s Track criteria'
+    );
+
+    // 5. Direct FSc graduate profile in matcher
+    const fscProfile: UserEligibilityProfile = {
+      academicPercentage: 88, // 88% in FSc
+      ieltsScore: 6.5,
+      degreeLevel: 'Bachelor', // Target: Bachelor
+      subjectArea: 'Engineering & Technology',
+      preferredDestination: 'All',
+      workExperienceYears: 0,
+      isPakistaniCitizen: true,
+    };
+
+    const fscMatches = matchAllScholarships(fscProfile);
+
+    // DAAD EPOS, Chevening, GKS, KAIST must report degree-level mismatch
+    for (const pgId of postgraduateOnlyIds) {
+      const match = fscMatches.find((m) => m.scholarship.id === pgId);
+      assert(
+        Boolean(match?.requirementsNotMet.some((r) => r.id === 'degree-level')),
+        `FSc applicant profile is flagged with degree-level mismatch for postgraduate ${pgId}`
+      );
+    }
+
+    // Türkiye Bursları must NOT report degree-level mismatch for FSc Bachelor applicant
+    const turkiyeMatch = fscMatches.find((m) => m.scholarship.id === 'turkiye-burslari');
+    assert(
+      !turkiyeMatch?.requirementsNotMet.some((r) => r.id === 'degree-level'),
+      'FSc applicant profile satisfies degree-level requirement for Türkiye Bursları Bachelor track'
+    );
+  }
+
   console.log('\n====================================================');
-  console.log('ALL SCHOLARSHIP AUDIT TESTS PASSED SUCCESSFULLY (14/14 SUITES)');
+  console.log('ALL SCHOLARSHIP AUDIT TESTS PASSED SUCCESSFULLY (15/15 SUITES)');
   console.log('====================================================');
 }
 
